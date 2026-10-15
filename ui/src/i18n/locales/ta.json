@@ -5,5 +5,33 @@
       "description": "ஒரு நிறுவனத்தை உருவாக்கி தொடங்குங்கள்.",
       "newCompany": "புதிய நிறுவனம்"
     }
+  },
+  "skills": {
+    "installed": {
+      "title": "Installed skills",
+      "description": "Skills available to this organization."
+    },
+    "discover": {
+      "title": "Discover skills",
+      "description": "Browse skills from every available source."
+    },
+    "create": {
+      "title": "Create a new skill"
+    },
+    "fork": {
+      "title": "Fork skill"
+    },
+    "actions": {
+      "new": "New",
+      "createNew": "Create new skill",
+      "import": "Import",
+      "createSkill": "Create a skill"
+    },
+    "empty": {
+      "installed": "No installed skills yet. Discover a skill or create one.",
+      "discover": "No skills are available to discover yet.",
+      "noMatch": "No skills match your filters.",
+      "noOrganization": "Select an organization to manage skills."
+    }
   }
 }

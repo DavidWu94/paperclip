@@ -27,6 +27,7 @@ import { agentsApi } from "../api/agents";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs, type Breadcrumb } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
+import { useTranslation } from "@/i18n";
 import { queryKeys } from "../lib/queryKeys";
 import { copyTextToClipboard } from "../lib/clipboard";
 import { EmptyState } from "../components/EmptyState";
@@ -1129,11 +1130,12 @@ export function DiscoveryGrid({
   /** Category/folder navigation stays available in production, but the Streamlined UI relies on search and scrolling. */
   showBrowseRails?: boolean;
 }) {
+  const { t } = useTranslation();
   const installedView = tab === "installed";
-  const viewTitle = installedView ? "Installed skills" : "Discover skills";
+  const viewTitle = installedView ? t("skills.installed.title") : t("skills.discover.title");
   const viewDescription = installedView
-    ? "Skills available to this organization."
-    : "Browse skills from every available source.";
+    ? t("skills.installed.description")
+    : t("skills.discover.description");
   const searchLabel = installedView ? "Search installed skills" : "Search discoverable skills";
   // Source filter (github / skills.sh / local / …) lives in the grid so it
   // narrows whatever the parent already filtered by tab/category/search (PAP-10907 E).
@@ -1301,18 +1303,18 @@ export function DiscoveryGrid({
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="default">
                 <Plus className="mr-1 h-3.5 w-3.5" />
-                New
+                {t("skills.actions.new")}
                 <ChevronDown className="ml-1 h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onSelect={onCreate}>
                 <Pencil className="mr-2 h-4 w-4" />
-                Create new skill
+                {t("skills.actions.createNew")}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={onBrowseDiscover}>
                 <Compass className="mr-2 h-4 w-4" />
-                Discover skills
+                {t("skills.discover.title")}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={onImport}>
                 <Globe className="mr-2 h-4 w-4" />
@@ -1425,10 +1427,10 @@ export function DiscoveryGrid({
                 message={
                   totalCount === 0
                     ? installedView
-                      ? "No installed skills yet. Discover a skill or create one."
-                      : "No skills are available to discover yet."
+                      ? t("skills.empty.installed")
+                      : t("skills.empty.discover")
                     : search || activeCategory || sourceFilterActive
-                      ? "No skills match your filters."
+                      ? t("skills.empty.noMatch")
                       : "No skills in this view yet."
                 }
               />
@@ -1436,11 +1438,11 @@ export function DiscoveryGrid({
                 <div className="mt-3 flex flex-col items-center gap-2">
                   {installedView ? (
                     <Button size="sm" onClick={onBrowseDiscover}>
-                      <Compass className="mr-1.5 h-3.5 w-3.5" /> Discover skills
+                      <Compass className="mr-1.5 h-3.5 w-3.5" /> {t("skills.discover.title")}
                     </Button>
                   ) : null}
                   <Button size="sm" variant="ghost" onClick={onCreate}>
-                    Create a skill
+                    {t("skills.actions.createSkill")}
                   </Button>
                 </div>
               ) : (search || activeCategory || sourceFilterActive) ? (
@@ -4020,6 +4022,7 @@ export function CompanySkills() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
+  const { t } = useTranslation();
   const adapterCaps = useAdapterCapabilities();
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const policyDenial = useSkillPolicyDenial();
@@ -4366,14 +4369,14 @@ export function CompanySkills() {
     setBreadcrumbs([
       { label: "Skills", href: "/skills" },
       ...(isStudioNew
-        ? [{ label: studioForkFromId ? "Fork skill" : "New skill" }]
+        ? [{ label: studioForkFromId ? t("skills.fork.title") : "New skill" }]
         : activeDetail
           ? skillDetailBreadcrumbs(activeDetail, skillFoldersQuery.data).slice(1)
           : routeSkillToken
             ? [{ label: "Detail" }]
             : []),
     ]);
-  }, [activeDetail, isStudioNew, routeSkillToken, setBreadcrumbs, skillFoldersQuery.data, studioForkFromId]);
+  }, [activeDetail, isStudioNew, routeSkillToken, setBreadcrumbs, skillFoldersQuery.data, studioForkFromId, t]);
   const activeFile = fileQuery.data ?? displayedFile;
 
   function routeForSkill(skill: CompanySkillRouteSubject, path?: string | null) {
@@ -5165,7 +5168,7 @@ export function CompanySkills() {
   );
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Boxes} message="Select an organization to manage skills." />;
+    return <EmptyState icon={Boxes} message={t("skills.empty.noOrganization")} />;
   }
 
   function handleAddSkillSource() {
@@ -5203,7 +5206,7 @@ export function CompanySkills() {
     ? (catalogListQuery.data ?? []).find((entry) => entry.key === activeDetail.key)?.source ?? null
     : null;
   const studioBackHref = studioForkDetailQuery.data ? routeForSkill(studioForkDetailQuery.data) : "/skills";
-  const studioTitle = studioForkFromId ? "Fork skill" : "Create a new skill";
+  const studioTitle = studioForkFromId ? t("skills.fork.title") : t("skills.create.title");
   const studioDescription = studioForkFromId
     ? "Review the fork metadata and create an editable organization copy."
     : "Create an editable organization skill in the Paperclip workspace.";
@@ -5345,7 +5348,7 @@ export function CompanySkills() {
                 className="h-9 rounded-none border-0 px-0 shadow-none focus-visible:ring-0"
               />
               <Button size="sm" onClick={handleAddSkillSource} disabled={importSkill.isPending}>
-                {importSkill.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Import"}
+                {importSkill.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : t("skills.actions.import")}
               </Button>
             </div>
             <a

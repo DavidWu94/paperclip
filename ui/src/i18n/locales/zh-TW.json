@@ -5,5 +5,33 @@
       "description": "從建立公司開始。",
       "newCompany": "新公司"
     }
+  },
+  "skills": {
+    "installed": {
+      "title": "已安裝的技能",
+      "description": "這個公司可以使用的技能。"
+    },
+    "discover": {
+      "title": "探索技能",
+      "description": "瀏覽各個來源提供的技能。"
+    },
+    "create": {
+      "title": "建立新技能"
+    },
+    "fork": {
+      "title": "分叉技能"
+    },
+    "actions": {
+      "new": "新增",
+      "createNew": "建立新技能",
+      "import": "匯入",
+      "createSkill": "建立技能"
+    },
+    "empty": {
+      "installed": "尚未安裝任何技能。請探索或建立一個技能。",
+      "discover": "目前沒有可探索的技能。",
+      "noMatch": "沒有符合篩選條件的技能。",
+      "noOrganization": "請先選擇公司，再管理技能。"
+    }
   }
 }
