@@ -18,6 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useToast } from "@/context/ToastContext";
+import { useTranslation } from "@/i18n";
+import { ensureAppsMessages } from "../connection-owner";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
 import { navigateTopLevel } from "@/lib/browserNavigation";
 import { prepareOAuthNavigation, savePendingCloudHandoff } from "@/lib/oauthHandoff";
@@ -111,6 +113,8 @@ function KeySection({
   canReplace: boolean;
   unavailableMessage: string;
 }) {
+  ensureAppsMessages();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <section>
@@ -118,15 +122,15 @@ function KeySection({
         <div className="flex items-start gap-3">
           <Lock className="mt-0.5 h-4 w-4 text-muted-foreground" />
           <div>
-            <h2 className="text-sm font-medium text-foreground">Reconnect</h2>
+            <h2 className="text-sm font-medium text-foreground">{t("apps.common.reconnect")}</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {canReplace ? "Replace the stored credential." : unavailableMessage}
+              {canReplace ? t("apps.advanced.replaceCredential") : unavailableMessage}
             </p>
           </div>
         </div>
         {canReplace && !open && (
           <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-            Reconnect
+            {t("apps.common.reconnect")}
           </Button>
         )}
       </div>
@@ -162,6 +166,8 @@ export function ReconnectCard({
   canReconnect?: boolean;
   reconnectUnavailableMessage?: string;
 }) {
+  ensureAppsMessages();
+  const { t } = useTranslation();
   const { pushToast } = useToast();
   const reconnectOAuth = useMutation({
     // Reconnect is not a new identity choice. Personal-only connections must
@@ -216,29 +222,29 @@ export function ReconnectCard({
     <div className="flex flex-col gap-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-          {methodUnavailable ? "Connection no longer supported" : oauth ? "Reconnect required" : "This app needs reconnecting"}
+          {methodUnavailable ? t("apps.advanced.unsupported") : oauth ? t("apps.advanced.reconnectRequired") : t("apps.advanced.needsReconnecting")}
         </h2>
         <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-200">
           {methodUnavailable
-            ? "Add a supported connection from Connectors, then remove this connection."
+            ? t("apps.advanced.unsupportedBody")
             : connection.healthMessage?.trim() || (oauth
-            ? "Authorization expired or was revoked. Sign in again to restore access."
-            : "The key stopped working. Paste a new one to get it back online.")}
+            ? t("apps.advanced.authExpired")
+            : t("apps.advanced.keyStopped"))}
         </p>
       </div>
       <div className="shrink-0">
         {!canReconnect ? (
           <p className="text-sm text-amber-800 dark:text-amber-200">
-            {reconnectUnavailableMessage ?? "You don't have permission to reconnect this identity."}
+            {reconnectUnavailableMessage ?? t("apps.notConnected.noReconnectPermission")}
           </p>
         ) : methodUnavailable ? (
           <Button size="sm" variant="outline" asChild>
             <Link to={`/apps/connect?source=${encodeURIComponent(galleryEntry!.slug)}`}>
-              Add supported connection
+              {t("apps.advanced.addSupported")}
             </Link>
           </Button>
         ) : onReconnect ? (
-          <Button size="sm" variant="outline" onClick={onReconnect}>Reconnect</Button>
+          <Button size="sm" variant="outline" onClick={onReconnect}>{t("apps.common.reconnect")}</Button>
         ) : managedByVercel && !oauth ? (
           <div className="flex items-center gap-2">
             <Button type="button" size="sm" variant="outline" asChild>
@@ -462,6 +468,8 @@ export function DangerZone({
   onReconnectIdentity?: () => void;
   onRevokeIdentity?: (grant: ConnectionGrant) => void;
 }) {
+  ensureAppsMessages();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<ConnectionGrant | null>(null);
@@ -485,7 +493,7 @@ export function DangerZone({
             type="button"
             className="flex w-full items-center gap-3 py-1 text-left"
           >
-            <span className="min-w-0 flex-1 text-sm font-medium text-destructive">Danger zone</span>
+            <span className="min-w-0 flex-1 text-sm font-medium text-destructive">{t("apps.gateways.dangerZone")}</span>
             <ChevronRight
               className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
             />
@@ -496,9 +504,9 @@ export function DangerZone({
           <div className="mt-3 divide-y divide-border border-t border-border">
             {connection && onToggleConnection ? (
               <div className="flex items-center justify-between gap-4 py-4">
-                <h2 className="text-sm font-medium text-foreground">Pause connection</h2>
+                <h2 className="text-sm font-medium text-foreground">{t("apps.advanced.pause")}</h2>
                 <ToggleSwitch
-                  aria-label="Pause connection"
+                  aria-label={t("apps.advanced.pause")}
                   checked={paused}
                   disabled={toggleDisabled}
                   onCheckedChange={onToggleConnection}
@@ -522,7 +530,7 @@ export function DangerZone({
             {connection?.authKind === "oauth" && !methodUnavailable && (onReconnectIdentity || !canReplaceCredential) ? (
               <div className="flex flex-wrap items-center justify-between gap-3 py-4">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Reconnect</p>
+                  <p className="text-sm font-medium text-foreground">{t("apps.common.reconnect")}</p>
                   <p className="text-xs text-muted-foreground">
                     {canReplaceCredential
                       ? `Sign in to ${identityProviderName} again.`
@@ -537,7 +545,7 @@ export function DangerZone({
                     onClick={onReconnectIdentity}
                   >
                     {identityActionPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-                    Reconnect
+                    {t("apps.common.reconnect")}
                   </Button>
                 ) : null}
               </div>
@@ -548,7 +556,7 @@ export function DangerZone({
               && onRevokeIdentity ? (
                 <div className="flex flex-wrap items-center justify-between gap-3 py-4">
                   <div>
-                    <p className="text-sm font-medium text-foreground">Revoke identity</p>
+                    <p className="text-sm font-medium text-foreground">{t("apps.advanced.revokeIdentity")}</p>
                     <p className="text-xs text-muted-foreground">
                       Disconnect the identity currently used by this app.
                     </p>
@@ -565,26 +573,30 @@ export function DangerZone({
 
             <div className="flex flex-wrap items-center justify-between gap-3 py-4">
               <div>
-                <p className="text-sm font-medium text-foreground">Remove this app</p>
+                <p className="text-sm font-medium text-foreground">{t("apps.advanced.removeApp")}</p>
                 <p className="text-xs text-muted-foreground">
                   {childConnectionCount > 0
-                    ? `Deletes credentials for ${appName} and ${childConnectionCount} connected ${childConnectionCount === 1 ? "service" : "services"}.`
-                    : `Deletes credentials for ${appName} and removes agent access. Reconnecting requires a new sign-in or key.`}
+                    ? t("apps.advanced.deleteWithServices", {
+                        app: appName,
+                        count: childConnectionCount,
+                        unit: childConnectionCount === 1 ? t("apps.connections.serviceOne") : t("apps.connections.serviceMany"),
+                      })
+                    : t("apps.advanced.deleteAccess", { app: appName })}
                 </p>
               </div>
               {confirming ? (
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>
-                    Cancel
+                    {t("apps.common.cancel")}
                   </Button>
                   <Button variant="destructive" size="sm" onClick={onRemove} disabled={removing}>
                     {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                    Yes, remove it
+                    {t("apps.advanced.yesRemove")}
                   </Button>
                 </div>
               ) : (
                 <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>
-                  Remove app
+                  {t("apps.advanced.remove")}
                 </Button>
               )}
             </div>

@@ -6,7 +6,9 @@ import { Link, Navigate, useNavigate, useParams } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useToast } from "@/context/ToastContext";
+import { useTranslation } from "@/i18n";
 import { queryKeys } from "@/lib/queryKeys";
+import { ensureAppsMessages } from "../connection-owner";
 import { toolsApi } from "@/api/tools";
 import { agentsApi } from "@/api/agents";
 import { projectsApi } from "@/api/projects";
@@ -28,6 +30,8 @@ import { CopyableGatewayUrl } from "./CopyableGatewayUrl";
 
 export function GatewayDetail() {
   const { gatewayId = "", tab } = useParams<{ gatewayId: string; tab?: string }>();
+  ensureAppsMessages();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -103,12 +107,12 @@ export function GatewayDetail() {
   useEffect(() => {
     if (!gateway) return;
     setBreadcrumbs([
-      { label: "Connectors", href: "/apps" },
-      { label: "Gateways", href: "/apps/gateways" },
+      { label: t("apps.common.connectors"), href: "/apps" },
+      { label: t("apps.common.gateways"), href: "/apps/gateways" },
       { label: gateway.name },
     ]);
     return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs, gateway]);
+  }, [setBreadcrumbs, gateway, t]);
 
   const toggleMutation = useMutation({
     mutationFn: () =>
@@ -117,25 +121,25 @@ export function GatewayDetail() {
       }),
     onSuccess: async (updated) => {
       pushToast({
-        title: updated.status === "active" ? "Gateway on" : "Gateway off",
+        title: updated.status === "active" ? t("apps.gateways.on") : t("apps.gateways.off"),
         body:
           updated.status === "active"
-            ? `${updated.name} is exposing its tools again.`
-            : `${updated.name} is off — every client goes silent.`,
+            ? t("apps.gateways.onBody", { name: updated.name })
+            : t("apps.gateways.offBody", { name: updated.name }),
         tone: "success",
       });
       await queryClient.invalidateQueries({ queryKey: gatewaysQueryKey(selectedCompanyId!) });
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't update the gateway",
+        title: t("apps.gateways.updateFailed"),
         body: error instanceof Error ? error.message : String(error),
         tone: "error",
       }),
   });
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to manage gateways.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{t("apps.selectOrg.gateways")}</div>;
   }
   if (!activeTab) {
     return <Navigate replace to={gatewayTabHref(gatewayId, "overview")} />;
@@ -155,9 +159,9 @@ export function GatewayDetail() {
   if (!gateway) {
     return (
       <div className="max-w-3xl p-6">
-        <p className="text-sm text-muted-foreground">We couldn’t find that gateway.</p>
+        <p className="text-sm text-muted-foreground">{t("apps.gateways.notFound")}</p>
         <Button className="mt-4" variant="outline" onClick={() => navigate("/apps/gateways")}>
-          Back to gateways
+          {t("apps.gateways.backToList")}
         </Button>
       </div>
     );
@@ -169,7 +173,7 @@ export function GatewayDetail() {
         <div className="min-w-0">
           <div className="text-xs text-muted-foreground">
             <Link to="/apps/gateways" className="hover:underline">
-              Apps · Gateways
+              {t("apps.gateways.appsGateways")}
             </Link>
           </div>
           <h1 className="mt-1 text-2xl font-bold tracking-tight">{gateway.name}</h1>
@@ -178,18 +182,25 @@ export function GatewayDetail() {
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setEditing(true)}>
             <Pencil className="mr-1.5 h-4 w-4" />
-            Edit
+            {t("apps.common.edit")}
           </Button>
           <Button onClick={() => setSnippetOpen(true)}>
             <Send className="mr-1.5 h-4 w-4" />
-            Client snippets
+            {t("apps.gateways.clientSnippets")}
           </Button>
         </div>
       </div>
 
-      <nav className="flex items-center gap-6 overflow-x-auto border-b border-border text-sm" aria-label="Gateway tabs">
+      <nav className="flex items-center gap-6 overflow-x-auto border-b border-border text-sm" aria-label={t("apps.gateways.tabsLabel")}>
         {GATEWAY_TABS.map((item) => {
           const isActive = item.key === activeTab;
+          const tabLabel = ({
+            overview: t("apps.tabs.overview"),
+            apps: t("apps.tabs.appsAndTools"),
+            tokens: t("apps.tabs.tokens"),
+            activity: t("apps.tabs.activity"),
+            advanced: t("apps.tabs.advanced"),
+          })[item.key];
           return (
             <Link
               key={item.key}
@@ -202,7 +213,7 @@ export function GatewayDetail() {
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              {item.label}
+              {tabLabel}
             </Link>
           );
         })}

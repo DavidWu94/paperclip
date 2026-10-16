@@ -12,6 +12,8 @@ import { IssueThreadInteractionCard } from "@/components/IssueThreadInteractionC
 import { toolsApi } from "@/api/tools";
 import { Button } from "@/components/ui/button";
 import { MarkdownBody } from "@/components/MarkdownBody";
+import { i18n, useTranslation } from "@/i18n";
+import { ensureAppsMessages } from "./connection-owner";
 
 /**
  * "Ask first" review queue (M1b float / M9 card, PAP-10859).
@@ -27,7 +29,7 @@ import { MarkdownBody } from "@/components/MarkdownBody";
 export function ReviewQueueCard({
   connectionId,
   emptyState = "hidden",
-  heading = "Waiting for your OK",
+  heading,
   plain = false,
 }: {
   connectionId?: string;
@@ -35,6 +37,9 @@ export function ReviewQueueCard({
   heading?: string;
   plain?: boolean;
 }) {
+  ensureAppsMessages();
+  const { t } = useTranslation();
+  const resolvedHeading = heading ?? t("apps.reviewPage.waiting");
   const { selectedCompanyId } = useCompany();
 
   const query = useQuery({
@@ -51,13 +56,13 @@ export function ReviewQueueCard({
 
   if (!selectedCompanyId) return null;
   if (query.isLoading) return null;
-  if (query.isError) return <p role="alert" className="text-sm text-destructive">Could not load connection reviews. Please refresh to try again.</p>;
+  if (query.isError) return <p role="alert" className="text-sm text-destructive">{t("apps.reviewQueue.loadError")}</p>;
 
   if (items.length === 0) {
     if (emptyState === "hidden") return null;
     return (
       <div className={plain ? "py-5 text-sm text-muted-foreground" : "rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground"}>
-        Nothing is waiting for your OK right now.
+        {t("apps.reviewQueue.empty")}
       </div>
     );
   }
@@ -66,7 +71,7 @@ export function ReviewQueueCard({
     <section className="space-y-3">
       <div className="flex items-center gap-2">
         <ShieldQuestion className="h-4 w-4 text-muted-foreground" />
-        <h2 className="text-sm font-bold text-foreground">{heading}</h2>
+        <h2 className="text-sm font-bold text-foreground">{resolvedHeading}</h2>
         <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
           {items.length}
         </span>
@@ -89,6 +94,8 @@ function ReviewRow({
   item: ToolActionRequestListItem;
   plain: boolean;
 }) {
+  ensureAppsMessages();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [resolving, setResolving] = useState<null | "allow" | "always" | "decline">(null);
@@ -111,7 +118,7 @@ function ReviewRow({
     mutationFn: () => toolsApi.approveActionRequest(companyId, item.request.id),
     onMutate: () => setResolving("allow"),
     onSuccess: () => {
-      pushToast({ title: "Allowed once", body: `${actionLabel(item)} can run this time.`, tone: "success" });
+      pushToast({ title: t("apps.reviewQueue.allowedOnce"), body: t("apps.reviewQueue.allowedOnceBody", { action: actionLabel(item) }), tone: "success" });
       invalidate();
     },
     onError: (error) => {
@@ -128,8 +135,8 @@ function ReviewRow({
     onMutate: () => setResolving("always"),
     onSuccess: () => {
       pushToast({
-        title: "Always allowed",
-        body: `${actionLabel(item)} won’t ask again.`,
+        title: t("apps.reviewQueue.alwaysAllowed"),
+        body: t("apps.reviewQueue.alwaysAllowedBody", { action: actionLabel(item) }),
         tone: "success",
       });
       invalidate();
@@ -146,7 +153,7 @@ function ReviewRow({
     mutationFn: () => toolsApi.declineActionRequest(companyId, item.request.id),
     onMutate: () => setResolving("decline"),
     onSuccess: () => {
-      pushToast({ title: "Declined", body: `${actionLabel(item)} won’t run.`, tone: "info" });
+      pushToast({ title: t("apps.reviewQueue.declined"), body: t("apps.reviewQueue.declinedBody", { action: actionLabel(item) }), tone: "info" });
       invalidate();
     },
     onError: (error) => {
@@ -177,10 +184,10 @@ function ReviewRow({
         <span className="font-bold text-foreground">{actionLabel(item)}</span>
         {item.applicationName && (
           <span className="text-muted-foreground">
-            in {humanizeConnectionDisplayName(item.applicationName)}
+            {t("apps.reviewQueue.inApp", { app: humanizeConnectionDisplayName(item.applicationName) })}
           </span>
         )}
-        <span className="text-xs text-muted-foreground">· asked {timeAgo(item.request.createdAt)}</span>
+        <span className="text-xs text-muted-foreground">· {t("apps.reviewQueue.asked", { when: timeAgo(item.request.createdAt) })}</span>
       </div>
 
       {preview ? (
@@ -189,23 +196,23 @@ function ReviewRow({
         </div>
       ) : (
         <p className="mt-1 text-sm text-muted-foreground">
-          An agent wants to run this action. Your connection policy requires approval first.
+          {t("apps.reviewQueue.fallbackBody")}
         </p>
       )}
 
-      {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <p className="mt-2 text-xs text-muted-foreground">Always allow lets this agent use this action with different arguments on this connection, within the current project when present.</p> : null}
+      {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <p className="mt-2 text-xs text-muted-foreground">{t("apps.reviewQueue.alwaysAllowHint")}</p> : null}
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button size="sm" onClick={() => allowOnce.mutate()} disabled={busy}>
           {resolving === "allow" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Check className="mr-1.5 h-3.5 w-3.5" />}
-          Allow once
+          {t("apps.reviewQueue.allowOnce")}
         </Button>
         {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <Button size="sm" variant="outline" onClick={() => alwaysAllow.mutate()} disabled={busy}>
           {resolving === "always" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-          Always allow
+          {t("apps.reviewQueue.alwaysAllow")}
         </Button> : null}
         <Button size="sm" variant="ghost" onClick={() => decline.mutate()} disabled={busy}>
           {resolving === "decline" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <X className="mr-1.5 h-3.5 w-3.5" />}
-          Decline
+          {t("apps.reviewQueue.decline")}
         </Button>
       </div>
     </div>
@@ -213,7 +220,8 @@ function ReviewRow({
 }
 
 function actionLabel(item: ToolActionRequestListItem): string {
-  if (!item.toolTitle && !item.toolName) return "This action";
+  ensureAppsMessages();
+  if (!item.toolTitle && !item.toolName) return i18n.t("apps.reviewQueue.thisAction");
   return humanizeConnectionDisplayName(item.toolName ?? "", { title: item.toolTitle });
 }
 
@@ -221,9 +229,10 @@ function failToast(
   pushToast: ReturnType<typeof useToast>["pushToast"],
   error: unknown,
 ) {
+  ensureAppsMessages();
   pushToast({
-    title: "Couldn’t save that",
-    body: error instanceof Error ? error.message : "Please try again.",
+    title: i18n.t("apps.reviewQueue.saveFailed"),
+    body: error instanceof Error ? error.message : i18n.t("apps.reviewQueue.tryAgain"),
     tone: "error",
   });
 }

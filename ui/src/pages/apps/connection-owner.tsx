@@ -1,7 +1,22 @@
 import type { ToolConnection } from "@paperclipai/shared";
 import { humanizeConnectionDisplayName } from "@paperclipai/shared";
 import { Identity } from "@/components/Identity";
+import { i18n, useTranslation } from "@/i18n";
+import enApps from "@/i18n/partials/apps.en.json";
+import zhTWApps from "@/i18n/partials/apps.zh-TW.json";
 import type { CompanyUserProfile } from "@/lib/company-members";
+
+let appsMessagesReady = false;
+
+/** Merge Apps partials into the active catalogs without editing locale files. */
+export function ensureAppsMessages() {
+  if (appsMessagesReady) return;
+  i18n.addResourceBundle("en", "translation", enApps, true, true);
+  i18n.addResourceBundle("zh-TW", "translation", zhTWApps, true, true);
+  appsMessagesReady = true;
+}
+
+ensureAppsMessages();
 
 export type ConnectionOwnerProfile = CompanyUserProfile;
 
@@ -10,17 +25,21 @@ export function connectionOwnerProfile(
   profiles: ReadonlyMap<string, CompanyUserProfile>,
 ): ConnectionOwnerProfile | null {
   if (!connection.createdByUserId) return null;
+  ensureAppsMessages();
   return profiles.get(connection.createdByUserId) ?? {
-    label: connection.createdByUserId === "local-board" ? "Board" : "Board member",
+    label: connection.createdByUserId === "local-board"
+      ? i18n.t("apps.owner.board")
+      : i18n.t("apps.owner.boardMember"),
     image: null,
   };
 }
 
 function ownerGivenName(label: string): string {
+  ensureAppsMessages();
   const trimmed = label.trim();
-  if (!trimmed) return "Board";
+  if (!trimmed) return i18n.t("apps.owner.board");
   const first = trimmed.split(/\s+/)[0] ?? trimmed;
-  return first.includes("@") ? first.split("@")[0] || "Board" : first;
+  return first.includes("@") ? first.split("@")[0] || i18n.t("apps.owner.board") : first;
 }
 
 function possessive(label: string): string {
@@ -49,11 +68,17 @@ export function connectionDisplayNameForOwner(
   if (connectionName.trim().toLocaleLowerCase() !== applicationName.trim().toLocaleLowerCase()) {
     return connectionName;
   }
-  return `${possessive(ownerGivenName(owner.label))} ${applicationName}`;
+  const given = ownerGivenName(owner.label);
+  if (i18n.resolvedLanguage === "zh-TW") {
+    return i18n.t("apps.owner.possessiveApp", { name: given, app: applicationName });
+  }
+  return `${possessive(given)} ${applicationName}`;
 }
 
 export function ConnectionOwnerIdentity({ owner }: { owner: ConnectionOwnerProfile | null }) {
-  if (!owner) return <span className="text-xs text-muted-foreground">Unknown</span>;
+  ensureAppsMessages();
+  const { t } = useTranslation();
+  if (!owner) return <span className="text-xs text-muted-foreground">{t("apps.common.unknown")}</span>;
   return (
     <Identity
       name={owner.label}

@@ -20,6 +20,7 @@ import { Navigate, useParams, useNavigate, useSearchParams } from "@/lib/router"
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useToast } from "@/context/ToastContext";
+import { i18n, useTranslation } from "@/i18n";
 import { queryKeys } from "@/lib/queryKeys";
 import { toolsApi } from "@/api/tools";
 import { agentsApi } from "@/api/agents";
@@ -43,7 +44,7 @@ import {
   appDefinitionSlug,
   type AppGalleryDisplayEntry,
 } from "./app-definition-display";
-import { appTabHref, appTabLabel, isAppTabKey, type AppTabKey } from "./app-tabs";
+import { appTabHref, isAppTabKey, type AppTabKey } from "./app-tabs";
 import { ServicesPanel } from "./app-detail/ServicesPanel";
 import { ConnectionProvenanceChip } from "./ComposioProvenanceChip";
 import { IdentitiesSection } from "./app-detail/IdentitiesSection";
@@ -58,6 +59,7 @@ import type { AccessDraft } from "./app-detail/types";
 import {
   connectionDisplayNameForOwner,
   connectionOwnerProfile,
+  ensureAppsMessages,
 } from "./connection-owner";
 
 export { connectionAddress, connectionTransportLabel };
@@ -66,6 +68,8 @@ export function AppDetail({ renderActions, onReconnect }: {
   renderActions?: (connection: ToolConnection) => ReactNode;
   onReconnect?: (connection: ToolConnection) => void;
 } = {}) {
+  ensureAppsMessages();
+  const { t } = useTranslation();
   const { connectionId = "", tab } = useParams<{ connectionId: string; tab?: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -173,13 +177,13 @@ export function AppDetail({ renderActions, onReconnect }: {
     )
     : grantsQuery.data?.capabilities.canConfigure === true;
   const reconnectUnavailableMessage = grantsQuery.isLoading
-    ? "Checking who can reconnect this identity…"
+    ? t("apps.notConnected.checkingReconnect")
     : grantsQuery.isError
-      ? "We couldn't verify who can reconnect this identity. Reload the page to try again."
+      ? t("apps.notConnected.reconnectVerifyFailed")
       : managedIdentityGrant?.kind === "user"
         && managedPersonalUserId !== grantsQuery.data?.currentUserId
-        ? "The person this connection belongs to must reconnect it."
-        : "You don't have permission to reconnect this identity.";
+        ? t("apps.notConnected.ownerMustReconnect")
+        : t("apps.notConnected.noReconnectPermission");
   const logoEntry = useMemo(
     () => galleryEntryFor((galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[], connection, application),
     [galleryQuery.data, connection, application],
@@ -194,10 +198,10 @@ export function AppDetail({ renderActions, onReconnect }: {
   const owner = connection ? connectionOwnerProfile(connection, userProfileById) : null;
   const baseAppName = connection
     ? logoEntry ? appDefinitionName(logoEntry) : humanizeConnectionDisplayName(connection)
-    : "App";
+    : t("apps.common.app");
   const appName = connection
     ? connectionDisplayNameForOwner(connection, baseAppName, owner)
-    : "App";
+    : t("apps.common.app");
   const successNoticeShownFor = useRef<string | null>(null);
 
   useEffect(() => {
@@ -209,22 +213,27 @@ export function AppDetail({ renderActions, onReconnect }: {
     ) return;
     successNoticeShownFor.current = connection.id;
     pushToast({
-      title: `${appName} connected`,
-      body: "The connection is ready. Review permissions or test an action below.",
+      title: t("apps.detail.connectedTitle", { app: appName }),
+      body: t("apps.detail.connectedBody"),
       tone: "success",
     });
     navigate(appTabHref(connection.id, "permissions"), { replace: true });
-  }, [activeTab, appName, connection, navigate, pushToast, searchParams]);
+  }, [activeTab, appName, connection, navigate, pushToast, searchParams, t]);
 
   useEffect(() => {
     if (!activeTab) return;
+    const tabLabel = activeTab === "services"
+      ? t("apps.tabs.services")
+      : activeTab === "review"
+        ? t("apps.tabs.review")
+        : t("apps.tabs.permissions");
     setBreadcrumbs([
-      { label: "Connectors", href: "/apps" },
+      { label: t("apps.common.connectors"), href: "/apps" },
       { label: appName, href: appTabHref(connectionId, "permissions") },
-      { label: appTabLabel(activeTab) },
+      { label: tabLabel },
     ]);
     return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs, appName, connectionId, activeTab]);
+  }, [setBreadcrumbs, appName, connectionId, activeTab, t]);
 
   const catalog = catalogQuery.data?.catalog ?? [];
   const profile = useMemo(
@@ -270,8 +279,8 @@ export function AppDetail({ renderActions, onReconnect }: {
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't save that",
-        body: error instanceof Error ? error.message : "Please try again.",
+        title: t("apps.reviewQueue.saveFailed"),
+        body: error instanceof Error ? error.message : t("apps.reviewQueue.tryAgain"),
         tone: "error",
       }),
     onSettled: () => setPending(false),
@@ -289,8 +298,8 @@ export function AppDetail({ renderActions, onReconnect }: {
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't rename the app",
-        body: error instanceof Error ? error.message : "Please try again.",
+        title: t("apps.detail.renameFailed"),
+        body: error instanceof Error ? error.message : t("apps.reviewQueue.tryAgain"),
         tone: "error",
       }),
   });
@@ -462,7 +471,7 @@ export function AppDetail({ renderActions, onReconnect }: {
   }
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to manage apps.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{t("apps.selectOrg.apps")}</div>;
   }
   if (connectionQuery.isLoading) {
     return (
@@ -476,9 +485,9 @@ export function AppDetail({ renderActions, onReconnect }: {
   if (!connection) {
     return (
       <div className="max-w-3xl p-6">
-        <p className="text-sm text-muted-foreground">We couldn't find that app.</p>
+        <p className="text-sm text-muted-foreground">{t("apps.detail.notFound")}</p>
         <Button className="mt-4" variant="outline" onClick={() => navigate("/apps")}>
-          Back to connectors
+          {t("apps.notConnected.back")}
         </Button>
       </div>
     );
@@ -486,7 +495,7 @@ export function AppDetail({ renderActions, onReconnect }: {
 
   const aiGrantRevoked = connection.connectionPurpose === "ai"
     && grantRows.length > 0 && grantRows.every((grant) => grant.status === "revoked");
-  const status: StatusInfo = aiGrantRevoked ? { label: "Revoked", tone: "attention" } : statusFor(connection);
+  const status: StatusInfo = aiGrantRevoked ? { label: t("apps.common.revoked"), tone: "attention" } : statusFor(connection);
   const needsReconnect = connection.requiresReauthorization
     ?? (status.tone === "attention" && connection.healthStatus !== "unknown");
   const quarantined = catalog.filter((e) => e.status === "quarantined");
@@ -527,9 +536,9 @@ export function AppDetail({ renderActions, onReconnect }: {
 
       {status.tone === "attention" && connection.requiresReauthorization === false && (
         <div role="status">
-          <p>{connection.healthMessage || "GitHub access could not be checked. Try again."}</p>
+          <p>{connection.healthMessage || t("apps.detail.githubCheckFailed")}</p>
           <Button variant="outline" disabled={refreshGitHubAccess.isPending} onClick={() => refreshGitHubAccess.mutate()}>
-            Retry access
+            {t("apps.detail.retryAccess")}
           </Button>
         </div>
       )}
@@ -675,6 +684,8 @@ function AppDetailHeader({
   onRenameCancel: () => void;
   onRenameSubmit: (value: string) => void;
 }) {
+  ensureAppsMessages();
+  const { t } = useTranslation();
   const unverifiedHost = unverifiedRemoteHost(connection);
   return (
     <header>
@@ -697,17 +708,17 @@ function AppDetailHeader({
               }}
             >
               <Input
-                aria-label="App name"
+                aria-label={t("apps.detail.appName")}
                 value={nameDraft}
                 onChange={(event) => onNameDraftChange(event.target.value)}
                 className="h-9 w-64 text-lg font-bold"
                 autoFocus
               />
               <Button type="submit" size="sm" disabled={renamePending || !nameDraft.trim()}>
-                {renamePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
+                {renamePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("apps.common.save")}
               </Button>
               <Button type="button" size="sm" variant="ghost" onClick={onRenameCancel} disabled={renamePending}>
-                Cancel
+                {t("apps.common.cancel")}
               </Button>
             </form>
           ) : (
@@ -717,7 +728,7 @@ function AppDetailHeader({
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-muted-foreground"
-                aria-label="Rename app"
+                aria-label={t("apps.detail.renameApp")}
                 onClick={onRenameStart}
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -728,7 +739,9 @@ function AppDetailHeader({
             <StatusBadge status={status} />
             {connection.config?.provider !== "agentmail" && actionCount !== null && (
               <span className="text-xs text-muted-foreground">
-                {actionCount} {actionCount === 1 ? "action" : "actions"} available
+                {actionCount === 1
+                  ? t("apps.detail.actionAvailable", { count: actionCount })
+                  : t("apps.detail.actionsAvailable", { count: actionCount })}
               </span>
             )}
             {connectionDisplaySecondaryHint(connection) ? (
@@ -746,19 +759,23 @@ function AppDetailHeader({
 }
 
 function ToolsLoading({ mcpActions = false }: { mcpActions?: boolean }) {
+  ensureAppsMessages();
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
       <Loader2 className="h-4 w-4 animate-spin" />
-      {mcpActions ? "Loading MCP actions, this may take a minute." : "Loading tools…"}
+      {mcpActions ? t("apps.detail.loadingMcp") : t("apps.detail.loadingTools")}
     </div>
   );
 }
 
 function ToolsLoadError({ onRetry }: { onRetry: () => void }) {
+  ensureAppsMessages();
+  const { t } = useTranslation();
   return (
     <div className="space-y-3 py-8">
-      <p className="text-sm text-destructive">Couldn’t load tools for this app.</p>
-      <Button size="sm" variant="outline" onClick={onRetry}>Try again</Button>
+      <p className="text-sm text-destructive">{t("apps.detail.toolsLoadError")}</p>
+      <Button size="sm" variant="outline" onClick={onRetry}>{t("apps.common.tryAgain")}</Button>
     </div>
   );
 }
@@ -788,13 +805,14 @@ function unverifiedRemoteHost(connection: ToolConnection): string | null {
 type StatusInfo = { label: string; tone: "connected" | "attention" | "paused" };
 
 function statusFor(connection: ToolConnection): StatusInfo {
+  ensureAppsMessages();
   if (connection.enabled === false || connection.status === "disabled") {
-    return { label: "Paused", tone: "paused" };
+    return { label: i18n.t("apps.common.paused"), tone: "paused" };
   }
   if (isAttentionHealthStatus(connection.healthStatus) || (connection.connectionPurpose === "ai" && (connection.healthStatus !== "ok" || aiSubscriptionNeedsIsolatedLogin(connection.config)))) {
-    return { label: "Needs attention", tone: "attention" };
+    return { label: i18n.t("apps.common.needsAttention"), tone: "attention" };
   }
-  return { label: "Connected", tone: "connected" };
+  return { label: i18n.t("apps.common.connected"), tone: "connected" };
 }
 
 function StatusBadge({ status }: { status: StatusInfo }) {
