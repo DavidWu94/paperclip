@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "@/i18n";
 
 type NavItem = {
   key: RoutineSectionKey;
@@ -74,7 +75,22 @@ export function RoutineSubSidebar({
   hasLiveRun: boolean;
   onNavigate: (section: RoutineSectionKey) => void;
 }) {
+  const { t } = useTranslation();
   const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const groupTitles: Record<string, string> = {
+    Routine: t("shell.routineSub.groups.routine"),
+    Operate: t("shell.routineSub.groups.operate"),
+  };
+  const itemLabels: Record<RoutineSectionKey, string> = {
+    overview: t("shell.routineSub.items.overview"),
+    triggers: t("shell.routineSub.items.triggers"),
+    variables: t("shell.routineSub.items.variables"),
+    secrets: t("shell.routineSub.items.secrets"),
+    delivery: t("shell.routineSub.items.delivery"),
+    runs: t("shell.routineSub.items.runs"),
+    activity: t("shell.routineSub.items.activity"),
+    history: t("shell.routineSub.items.history"),
+  };
 
   const focusItem = (index: number) => {
     const clamped = (index + ALL_ITEMS.length) % ALL_ITEMS.length;
@@ -109,13 +125,13 @@ export function RoutineSubSidebar({
 
   return (
     <nav
-      aria-label="Routine sections"
+      aria-label={t("shell.routineSub.sections")}
       className="hidden h-full w-52 shrink-0 flex-col gap-4 overflow-y-auto border-r border-border bg-background px-3 py-4 md:flex"
     >
       {NAV_GROUPS.map((group) => (
         <div key={group.label} className="flex flex-col gap-0.5">
           <p className="mx-2 px-2 pb-1 text-(length:--text-nano) font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
-            {group.label}
+            {groupTitles[group.label] ?? group.label}
           </p>
           {group.items.map((item) => {
             flatIndex += 1;
@@ -147,12 +163,12 @@ export function RoutineSubSidebar({
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{itemLabels[item.key]}</span>
                 {showLiveDot ? (
                   <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500 motion-safe:animate-pulse" />
                 ) : dirty ? (
                   <span
-                    aria-label="Unsaved changes"
+                    aria-label={t("shell.routineSub.unsaved")}
                     className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500 ring-2 ring-background"
                   />
                 ) : null}
@@ -175,6 +191,22 @@ export function RoutineSectionPicker({
   onNavigate: (section: RoutineSectionKey) => void;
   isSectionDirty: (section: RoutineSectionKey) => boolean;
 }) {
+  const { t } = useTranslation();
+  const groupTitles: Record<string, string> = {
+    Routine: t("shell.routineSub.groups.routine"),
+    Operate: t("shell.routineSub.groups.operate"),
+  };
+  const itemLabels: Record<RoutineSectionKey, string> = {
+    overview: t("shell.routineSub.items.overview"),
+    triggers: t("shell.routineSub.items.triggers"),
+    variables: t("shell.routineSub.items.variables"),
+    secrets: t("shell.routineSub.items.secrets"),
+    delivery: t("shell.routineSub.items.delivery"),
+    runs: t("shell.routineSub.items.runs"),
+    activity: t("shell.routineSub.items.activity"),
+    history: t("shell.routineSub.items.history"),
+  };
+
   return (
     <div className="sticky top-0 z-10 border-b border-border bg-background px-4 py-2 md:hidden">
       <Select
@@ -185,20 +217,20 @@ export function RoutineSectionPicker({
           }
         }}
       >
-        <SelectTrigger className="h-11 w-full" aria-label="Routine section">
+        <SelectTrigger className="h-11 w-full" aria-label={t("shell.routineSub.section")}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {NAV_GROUPS.map((group) => (
             <SelectGroup key={group.label}>
               <SelectLabel className="uppercase tracking-(--tracking-eyebrow) text-(length:--text-micro)">
-                {group.label}
+                {groupTitles[group.label] ?? group.label}
               </SelectLabel>
               {group.items.map((item) => (
                 <SelectItem key={item.key} value={item.key} className="h-11">
                   <span className="flex items-center gap-2">
                     <item.icon className="h-3.5 w-3.5" />
-                    {item.label}
+                    {itemLabels[item.key]}
                     {isSectionDirty(item.key) ? (
                       <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                     ) : null}

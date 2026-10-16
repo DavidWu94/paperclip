@@ -44,6 +44,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "@/lib/utils";
 import { useSidebar } from "../context/SidebarContext";
 import { CompanyPatternIcon } from "./CompanyPatternIcon";
+import { useTranslation } from "@/i18n";
 
 interface SidebarCompanyMenuProps {
   open?: boolean;
@@ -146,6 +147,7 @@ function SortableCompanyItem({
   isSelected: boolean;
   onSelect: (company: Company) => void;
 }) {
+  const { t } = useTranslation();
   const {
     attributes,
     listeners,
@@ -192,7 +194,7 @@ function SortableCompanyItem({
         <button
           type="button"
           ref={setActivatorNodeRef}
-          aria-label={`Reorder ${company.name}`}
+          aria-label={t("shell.company.reorder", { name: company.name })}
           className="inline-flex size-8 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-(length:--rad-2) focus-visible:ring-ring"
           onClick={(event) => {
             event.preventDefault();
@@ -213,6 +215,7 @@ function SortableCompanyItem({
 }
 
 export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompanyMenuProps = {}) {
+  const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const { companies, selectedCompany, setSelectedCompanyId, companyListUnavailable, retryCompanies } =
@@ -275,7 +278,6 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
       ?? null
     : null;
   const createStackUrl = isCloud ? cloudStackCreateUrl(cloudBaseUrl) : null;
-  const switcherNoun = "organization";
   // The one name the chrome shows for "where am I": the stack in cloud, the
   // company when self-hosted.
   const currentName = isCloud
@@ -372,8 +374,8 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
           className="h-9 min-w-0 flex-1 justify-start gap-2 px-4 text-left hover:bg-sidebar-accent hover:text-sidebar-accent-foreground has-[>svg]:px-4 dark:hover:bg-sidebar-accent dark:hover:text-sidebar-accent-foreground"
           aria-label={
             currentName
-              ? `Open ${currentName} ${switcherNoun} switcher`
-              : `Open ${switcherNoun} switcher`
+              ? t("shell.company.openNamedSwitcher", { name: currentName })
+              : t("shell.company.openSwitcher")
           }
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">
@@ -391,7 +393,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
               )}
               title={currentName ?? undefined}
             >
-              {currentName ?? `Select ${switcherNoun}`}
+              {currentName ?? t("shell.company.select")}
             </span>
           </span>
           {!rail && <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />}
@@ -404,7 +406,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
       >
         <div className="flex h-(--organization-popover-header-height) items-center justify-between gap-2 px-3.5">
           <DropdownMenuLabel className="p-0 text-(length:--text-compact) font-semibold text-foreground">
-            Organizations
+            {t("shell.company.organizations")}
           </DropdownMenuLabel>
           {/* Stack order is owned by cloud's own portfolio in v1, so the
               drag-to-reorder affordance stays self-hosted-only. */}
@@ -418,7 +420,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
               }}
               className="rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
-              {isEditingOrder ? "Done" : "Edit"}
+              {isEditingOrder ? t("shell.company.done") : t("shell.company.edit")}
             </button>
           )}
         </div>
@@ -436,10 +438,10 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
               {stacks.length === 0 ? (
                 <DropdownMenuItem disabled>
                   {stacksQuery.isLoading
-                    ? "Loading organizations..."
+                    ? t("shell.company.loading")
                     : stacksQuery.isError
-                      ? "Could not load organizations"
-                      : "No organizations"}
+                      ? t("shell.company.loadFailed")
+                      : t("shell.company.empty")}
                 </DropdownMenuItem>
               ) : null}
             </>
@@ -472,7 +474,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
                 // offer the way back.
                 companyListUnavailable ? (
                   <>
-                    <DropdownMenuItem disabled>Couldn&apos;t load organizations</DropdownMenuItem>
+                    <DropdownMenuItem disabled>{t("shell.company.loadFailedApostrophe")}</DropdownMenuItem>
                     <DropdownMenuItem
                       onSelect={(event) => {
                         // Keep the menu open so the result of the retry is visible.
@@ -481,11 +483,11 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
                       }}
                     >
                       <RefreshCw className="h-4 w-4 mr-2" />
-                      Try again
+                      {t("shell.company.tryAgain")}
                     </DropdownMenuItem>
                   </>
                 ) : (
-                  <DropdownMenuItem disabled>No organizations</DropdownMenuItem>
+                  <DropdownMenuItem disabled>{t("shell.company.empty")}</DropdownMenuItem>
                 )
               ) : null}
             </>
@@ -503,7 +505,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
               <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
                 <Plus className="size-4" />
               </span>
-              <span className="min-w-0 flex-1 truncate">Create organization</span>
+              <span className="min-w-0 flex-1 truncate">{t("shell.company.create")}</span>
             </DropdownMenuItem>
           )}
           {showInvitePeople ? (
@@ -522,7 +524,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
                   <UserPlus className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1 truncate">
-                  {currentName ? `Invite people to ${currentName}` : "Invite people"}
+                  {currentName ? t("shell.company.inviteTo", { name: currentName }) : t("shell.company.invite")}
                 </span>
               </Link>
             </DropdownMenuItem>
@@ -537,7 +539,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
                 <LogOut className="size-4" />
               </span>
               <span className="min-w-0 flex-1 truncate">
-                {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+                {signOutMutation.isPending ? t("shell.common.signingOut") : t("shell.common.signOut")}
               </span>
             </DropdownMenuItem>
           ) : null}

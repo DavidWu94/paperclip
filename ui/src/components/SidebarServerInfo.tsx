@@ -1,13 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Clock3, FileDiff, GitCommit, type LucideIcon } from "lucide-react";
+import type { TFunction } from "i18next";
 import { healthApi, type HealthStatus } from "@/api/health";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { queryKeys } from "@/lib/queryKeys";
+import { useTranslation } from "@/i18n";
 
-function formatTimestamp(value: string | null | undefined): string {
-  if (!value) return "Unavailable";
+function formatTimestamp(value: string | null | undefined, unavailable: string): string {
+  if (!value) return unavailable;
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Unavailable";
+  if (Number.isNaN(date.getTime())) return unavailable;
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -22,29 +24,31 @@ function restartTimestamp(health: HealthStatus | undefined): string | null {
   return health?.devServer?.lastRestartAt ?? health?.serverInfo?.processStartedAt ?? null;
 }
 
-function commitLabel(health: HealthStatus | undefined): string {
+function commitLabel(health: HealthStatus | undefined, t: TFunction): string {
   const git = health?.serverInfo?.git;
-  if (!git?.available) return "Commit unavailable";
+  if (!git?.available) return t("shell.server.commitUnavailable");
   return `${git.shortSha} · ${git.subject}`;
 }
 
-function localChangesLabel(health: HealthStatus | undefined): string {
+function localChangesLabel(health: HealthStatus | undefined, t: TFunction): string {
   const git = health?.serverInfo?.git;
-  if (!git?.available) return "Unavailable";
+  if (!git?.available) return t("shell.server.unavailable");
   const localChanges = git.localChanges;
-  if (!localChanges) return "Change status unavailable";
-  if (!localChanges.available) return "Change status unavailable";
-  if (!localChanges.hasLocalChanges) return "Clean checkout";
+  if (!localChanges) return t("shell.server.changeStatusUnavailable");
+  if (!localChanges.available) return t("shell.server.changeStatusUnavailable");
+  if (!localChanges.hasLocalChanges) return t("shell.server.cleanCheckout");
 
   const parts = [
-    [localChanges.stagedFileCount, "staged"],
-    [localChanges.unstagedFileCount, "unstaged"],
-    [localChanges.untrackedFileCount, "untracked"],
+    [localChanges.stagedFileCount, "shell.server.staged"],
+    [localChanges.unstagedFileCount, "shell.server.unstaged"],
+    [localChanges.untrackedFileCount, "shell.server.untracked"],
   ]
     .filter(([count]) => Number(count) > 0)
-    .map(([count, label]) => `${count} ${label}`);
+    .map(([count, key]) => t(String(key), { fileCount: count }));
 
-  return parts.length > 0 ? `Local changes present (${parts.join(", ")})` : "Local changes present";
+  return parts.length > 0
+    ? t("shell.server.localChangesPresentDetailed", { details: parts.join(", ") })
+    : t("shell.server.localChangesPresent");
 }
 
 function ServerInfoRow({
@@ -78,6 +82,7 @@ function ServerInfoRow({
 }
 
 export function SidebarServerInfo() {
+  const { t } = useTranslation();
   const experimentalQuery = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
@@ -106,34 +111,34 @@ export function SidebarServerInfo() {
   const restartedAt = restartTimestamp(health);
   const restartedAtIsValid = isValidTimestamp(restartedAt);
   const lastRestartedLabel = healthUnavailable
-    ? "Health unavailable"
+    ? t("shell.server.healthUnavailable")
     : isWaitingForHealth
-      ? "Loading..."
-      : formatTimestamp(restartedAt);
+      ? t("shell.server.loading")
+      : formatTimestamp(restartedAt, t("shell.server.unavailable"));
   const commit = healthUnavailable
-    ? "Health unavailable"
+    ? t("shell.server.healthUnavailable")
     : isWaitingForHealth
-      ? "Loading..."
-      : commitLabel(health);
+      ? t("shell.server.loading")
+      : commitLabel(health, t);
   const localChanges = healthUnavailable
-    ? "Health unavailable"
+    ? t("shell.server.healthUnavailable")
     : isWaitingForHealth
-      ? "Loading..."
-      : localChangesLabel(health);
+      ? t("shell.server.loading")
+      : localChangesLabel(health, t);
 
   return (
     <div className="mt-2 border-t border-border pt-2">
       <p className="px-3 pb-1 pt-1 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-        Server
+        {t("shell.server.title")}
       </p>
       <ServerInfoRow
         icon={Clock3}
-        label="Last restarted"
+        label={t("shell.server.lastRestarted")}
         value={lastRestartedLabel}
         dateTime={!healthUnavailable && !isWaitingForHealth && restartedAtIsValid ? restartedAt : null}
       />
-      <ServerInfoRow icon={GitCommit} label="Running commit" value={commit} />
-      <ServerInfoRow icon={FileDiff} label="Checkout state" value={localChanges} />
+      <ServerInfoRow icon={GitCommit} label={t("shell.server.runningCommit")} value={commit} />
+      <ServerInfoRow icon={FileDiff} label={t("shell.server.checkoutState")} value={localChanges} />
     </div>
   );
 }
