@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
-import { companies, createDb, toolApplications, toolConnections, toolCatalogEntries, toolProfiles, toolProfileBindings, type Db } from "@paperclipai/db";
+import { agents, companies, createDb, toolApplications, toolConnections, toolCatalogEntries, toolProfiles, toolProfileBindings, toolProfileEntries, type Db } from "@paperclipai/db";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { toolAccessService } from "../services/tool-access.js";
+import { toolAccessPolicyService } from "../services/tool-access-policy.js";
 
 const support = await getEmbeddedPostgresTestSupport();
 const describeDatabase = support.supported ? describe : describe.skip;
@@ -101,6 +102,41 @@ describeDatabase("catalog publication", () => {
     const after = await db.select().from(toolCatalogEntries).where(eq(toolCatalogEntries.connectionId, connectionId)).orderBy(toolCatalogEntries.toolName);
     expect(after.map(row => [row.id, row.firstSeenAt, row.status, row.quarantinedAt, row.quarantineReason])).toEqual(before.map(row => [row.id, row.firstSeenAt, row.status, row.quarantinedAt, row.quarantineReason]));
   });
+
+  it.each(["new", "quarantined"] as const)("does not restore an Off action after overlapping refreshes of a %s tool", async state => {
+    await serviceWithTools([]).refreshCatalog(connectionId);
+    if (state === "quarantined") await db.insert(toolCatalogEntries).values({
+      companyId, applicationId, connectionId, name: "search", toolName: "search", riskLevel: "read",
+      status: "quarantined", versionHash: "fixture-version", schemaHash: "fixture-schema", quarantineReason: "pending_review", quarantinedAt: new Date("2020-01-01T00:00:00Z"),
+    });
+    const [agent] = await db.insert(agents).values({ companyId, name: "Catalog permission fixture", role: "engineer", adapterType: "process", adapterConfig: {}, runtimeConfig: {} }).returning();
+    const service = serviceWithTools([{ name: "search", annotations: { readOnlyHint: true } }]);
+    const transaction = db.transaction.bind(db);
+    let paused = false;
+    let release!: () => void;
+    const resume = new Promise<void>(resolve => { release = resolve; });
+    const transactionSpy = vi.spyOn(db, "transaction").mockImplementation((async (operation, config) => {
+      if (!paused) { paused = true; await resume; }
+      return transaction(operation, config);
+    }) as typeof db.transaction);
+    const later = Promise.allSettled([service.refreshCatalog(connectionId, undefined, { enableAllByDefault: true })]);
+    try {
+      await vi.waitFor(() => expect(paused).toBe(true), { timeout: 5000 });
+      const first = await service.refreshCatalog(connectionId, undefined, { enableAllByDefault: true });
+      const entry = first.catalog[0];
+      const decide = () => toolAccessPolicyService(db).decide({ companyId, actor: { actorType: "agent", actorId: agent.id }, request: { connectionId, catalogEntryId: entry.id, toolName: entry.toolName, arguments: {} } });
+      await expect(decide()).resolves.toMatchObject({ decision: "allow", reasonCode: "allow_profile" });
+      const [selection] = await db.select().from(toolProfileEntries).where(eq(toolProfileEntries.catalogEntryId, entry.id));
+      await service.deleteProfileEntry(selection.id);
+      await expect(decide()).resolves.toMatchObject({ decision: "deny" });
+      release();
+      const [result] = await later;
+      if (result.status === "rejected") throw result.reason;
+      await expect(decide()).resolves.toMatchObject({ decision: "deny" });
+      expect(await db.select().from(toolCatalogEntries).where(eq(toolCatalogEntries.connectionId, connectionId))).toHaveLength(1);
+      expect(await db.select().from(toolProfileEntries).where(eq(toolProfileEntries.catalogEntryId, entry.id))).toHaveLength(0);
+    } finally { release(); await later; transactionSpy.mockRestore(); }
+  }, 15000);
 
   it("keeps committed chunks and rolls back a failed default-profile publication", async () => {
     const service = serviceWithTools(Array.from({ length: 501 }, (_, index) => ({ name: `search_${index}`, annotations: { readOnlyHint: true } })));

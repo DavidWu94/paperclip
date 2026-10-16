@@ -7883,16 +7883,25 @@ export function toolAccessService(
       });
     }
     const catalogRows: Array<typeof toolCatalogEntries.$inferSelect> = [];
+    const newCatalogEntryIds = new Set<string>();
     for (let index = 0; index < catalogValues.length; index += 500) {
-      catalogRows.push(...await publish(tx => tx.insert(toolCatalogEntries).values(catalogValues.slice(index, index + 500))
-      .onConflictDoUpdate({ target: [toolCatalogEntries.connectionId, toolCatalogEntries.name], set: {
-        title: sql`excluded.title`, description: sql`excluded.description`, inputSchema: sql`excluded.input_schema`,
-        annotations: sql`excluded.annotations`, riskLevel: sql`excluded.risk_level`, isReadOnly: sql`excluded.is_read_only`,
-        isWrite: sql`excluded.is_write`, isDestructive: sql`excluded.is_destructive`,
-        status: sql`CASE WHEN ${toolCatalogEntries.status} = 'disabled' AND ${toolCatalogEntries.quarantineReason} IS DISTINCT FROM 'mcp_tool_removed' THEN 'disabled' ELSE excluded.status END`,
-        versionHash: sql`excluded.version_hash`, schemaHash: sql`excluded.schema_hash`, lastSeenAt: sql`excluded.last_seen_at`,
-        quarantinedAt: sql`excluded.quarantined_at`, quarantineReason: sql`excluded.quarantine_reason`, updatedAt: sql`excluded.updated_at`,
-      } }).returning()));
+      const chunk = catalogValues.slice(index, index + 500);
+      catalogRows.push(...await publish(async tx => {
+        const current = await tx.select({ name: toolCatalogEntries.name, status: toolCatalogEntries.status })
+          .from(toolCatalogEntries).where(and(eq(toolCatalogEntries.connectionId, connection.id), inArray(toolCatalogEntries.name, chunk.map(entry => entry.name))));
+        const existingNonQuarantinedNames = new Set(current.filter(entry => entry.status !== "quarantined").map(entry => entry.name));
+        const rows = await tx.insert(toolCatalogEntries).values(chunk)
+          .onConflictDoUpdate({ target: [toolCatalogEntries.connectionId, toolCatalogEntries.name], set: {
+            title: sql`excluded.title`, description: sql`excluded.description`, inputSchema: sql`excluded.input_schema`,
+            annotations: sql`excluded.annotations`, riskLevel: sql`excluded.risk_level`, isReadOnly: sql`excluded.is_read_only`,
+            isWrite: sql`excluded.is_write`, isDestructive: sql`excluded.is_destructive`,
+            status: sql`CASE WHEN ${toolCatalogEntries.status} = 'disabled' AND ${toolCatalogEntries.quarantineReason} IS DISTINCT FROM 'mcp_tool_removed' THEN 'disabled' ELSE excluded.status END`,
+            versionHash: sql`excluded.version_hash`, schemaHash: sql`excluded.schema_hash`, lastSeenAt: sql`excluded.last_seen_at`,
+            quarantinedAt: sql`excluded.quarantined_at`, quarantineReason: sql`excluded.quarantine_reason`, updatedAt: sql`excluded.updated_at`,
+          } }).returning();
+        for (const row of rows) if (!existingNonQuarantinedNames.has(row.name)) newCatalogEntryIds.add(row.id);
+        return rows;
+      }));
     }
     const catalogByName = new Map(catalogRows.map(row => [row.toolName, row]));
     const updatedEntries = descriptors.map(descriptor => toCatalogEntry(catalogByName.get(descriptor.name)!));
@@ -7951,10 +7960,7 @@ export function toolAccessService(
         // Discovery must not re-enable actions the operator turned Off,
         // including curated MCP connections during API-key replacement.
         newCatalogEntryIds: activeEntries
-          .filter((entry) => {
-            const previous = existingByName.get(entry.toolName);
-            return !previous || previous.status === "quarantined";
-          })
+          .filter((entry) => newCatalogEntryIds.has(entry.id))
           .map((entry) => entry.id),
         activeCatalogEntryIds: activeEntries.map((entry) => entry.id),
         restoreDraftDefaults: refreshOptions.restoreDraftDefaults || preserveMcpAccess,
