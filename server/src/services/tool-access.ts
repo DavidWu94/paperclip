@@ -15621,6 +15621,12 @@ export function toolAccessService(
           ),
         )
         .limit(1);
+      await tx.select({ id: toolApplications.id }).from(toolApplications)
+        .where(and(eq(toolApplications.id, connection.applicationId), eq(toolApplications.companyId, connection.companyId)))
+        .for("update");
+      await tx.select({ id: toolConnections.id }).from(toolConnections)
+        .where(and(eq(toolConnections.id, connection.id), eq(toolConnections.companyId, connection.companyId)))
+        .for("update");
       const existingRefs =
         existingCredentialGrant?.credentialSecretRefs ??
         (personalCredential || agentCredential
@@ -16241,6 +16247,12 @@ export function toolAccessService(
             ),
           )
           .limit(1);
+        await tx.select({ id: toolApplications.id }).from(toolApplications)
+          .where(and(eq(toolApplications.id, connection.applicationId), eq(toolApplications.companyId, connection.companyId)))
+          .for("update");
+        await tx.select({ id: toolConnections.id }).from(toolConnections)
+          .where(and(eq(toolConnections.id, connection.id), eq(toolConnections.companyId, connection.companyId)))
+          .for("update");
         const subjectCredentialSecretRefs =
           existingUserGrant?.credentialSecretRefs ?? [];
         const accessRef = await createOrRotateOAuthSecret(
@@ -16554,6 +16566,12 @@ export function toolAccessService(
           "Only a company owner, admin, or member with connection-manager permission can share credentials with the organization.",
         );
       }
+      await tx.select({ id: toolApplications.id }).from(toolApplications)
+        .where(and(eq(toolApplications.id, connection.applicationId), eq(toolApplications.companyId, connection.companyId)))
+        .for("update");
+      await tx.select({ id: toolConnections.id }).from(toolConnections)
+        .where(and(eq(toolConnections.id, connection.id), eq(toolConnections.companyId, connection.companyId)))
+        .for("update");
       const txSecrets = secretService(tx);
       const txSecretContext = { dbClient: tx, secretClient: txSecrets };
 
