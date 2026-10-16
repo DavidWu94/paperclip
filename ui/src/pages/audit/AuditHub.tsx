@@ -1,4 +1,5 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { useTranslation } from "@/i18n";
 import { History } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { PageTabBar } from "@/components/PageTabBar";
@@ -19,6 +20,7 @@ import {
 } from "./audit-navigation";
 
 export function AuditHub({ section }: { section: AuditSection }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -39,13 +41,30 @@ export function AuditHub({ section }: { section: AuditSection }) {
     "company.",
   ].includes(actionParam ?? "") ? actionParam! : "__all";
 
+  const sectionLabel = (value: AuditSection) => {
+    switch (value) {
+      case "activity": return t("work.audit.sections.activity");
+      case "runs": return t("work.audit.sections.runs");
+      case "costs": return t("work.audit.sections.costs");
+      case "budgets": return t("work.audit.sections.budgets");
+      case "timeline": return t("work.audit.sections.timeline");
+      default: return value;
+    }
+  };
+  const tabItems = useMemo(
+    () => AUDIT_SECTIONS.map((item) => ({ ...item, label: sectionLabel(item.value) })),
+    // section labels only depend on the active translator
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t],
+  );
+
   useEffect(() => {
     const current = AUDIT_SECTIONS.find((candidate) => candidate.value === section);
     setBreadcrumbs([
-      { label: "Audit", href: section === "activity" ? undefined : "/activity" },
-      ...(section === "activity" || !current ? [] : [{ label: current.label }]),
+      { label: t("work.audit.title"), href: section === "activity" ? undefined : "/activity" },
+      ...(section === "activity" || !current ? [] : [{ label: sectionLabel(section) }]),
     ]);
-  }, [section, setBreadcrumbs]);
+  }, [section, setBreadcrumbs, t]);
 
   const handleModeChange = useCallback(
     (next: AuditFeedMode) => {
@@ -78,16 +97,15 @@ export function AuditHub({ section }: { section: AuditSection }) {
   );
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={History} message="Select an organization to view Audit." />;
+    return <EmptyState icon={History} message={t("work.audit.selectOrg")} />;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Audit</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t("work.audit.title")}</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Review what happened, inspect agent runs, and understand the costs and budget controls
-          behind your organization.
+          {t("work.audit.description")}
         </p>
       </div>
 
@@ -98,7 +116,7 @@ export function AuditHub({ section }: { section: AuditSection }) {
           navigate(auditSectionHref(next, scope));
         }}
       >
-        <PageTabBar items={AUDIT_SECTIONS} value={section} align="start" />
+        <PageTabBar items={tabItems} value={section} align="start" />
       </Tabs>
 
       {section === "activity" && routineId ? (
