@@ -11,8 +11,10 @@ import { useParams } from "@/lib/router";
 import { agentRouteRef } from "@/lib/utils";
 import { TaskDetailSurface } from "./IssueDetail";
 import type { Issue } from "@paperclipai/shared";
+import { useTranslation } from "@/i18n";
 
 export function AgentChat() {
+  const { t } = useTranslation();
   const { agentRef = "" } = useParams<{ agentRef: string }>();
   const { selectedCompanyId } = useCompany();
   const { enabled, loaded } = useAgentChatEnabled();
@@ -46,7 +48,7 @@ export function AgentChat() {
       recordAgentChatVisit(agent.companyId, userId, agent.id);
   }, [enabled, agent?.id, agent?.companyId, userId, session.isFetched]);
   const ensureIssue = useCallback(async () => {
-    if (!agent || !selectedCompanyId) throw new Error("Agent not found");
+    if (!agent || !selectedCompanyId) throw new Error(t("core.agentChat.notFound"));
     if (chat.data) return chat.data;
     const promise = (creating.current ??= agentChatsApi.ensure(
       selectedCompanyId,
@@ -61,16 +63,15 @@ export function AgentChat() {
       creating.current = null;
       throw error;
     }
-  }, [agent, selectedCompanyId, chat.data, client, userId]);
+  }, [agent, selectedCompanyId, chat.data, client, userId, t]);
   if (!loaded || agents.isPending || session.isPending)
     return (
-      <p className="text-sm text-muted-foreground">Loading conversation…</p>
+      <p className="text-sm text-muted-foreground">{t("core.agentChat.loading")}</p>
     );
   if (!enabled && !chat.data)
     return (
       <p className="text-sm text-muted-foreground">
-        Agent Chat is disabled. Enable it in Experimental settings. Existing
-        history remains available through task links.
+        {t("core.agentChat.disabled")}
       </p>
     );
   if (agents.error || chat.error)
@@ -80,10 +81,10 @@ export function AgentChat() {
       </p>
     );
   if (!agent)
-    return <p className="text-sm text-destructive">Agent not found.</p>;
+    return <p className="text-sm text-destructive">{t("core.agentChat.notFound")}</p>;
   if (chat.isPending)
     return (
-      <p className="text-sm text-muted-foreground">Loading conversation…</p>
+      <p className="text-sm text-muted-foreground">{t("core.agentChat.loading")}</p>
     );
   return (
     <TaskDetailSurface
