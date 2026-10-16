@@ -7,11 +7,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { i18n, useTranslation } from "@/i18n";
+import skillsExtraEn from "@/i18n/partials/skills.en.json";
+import skillsExtraZhTW from "@/i18n/partials/skills.zh-TW.json";
+
+i18n.addResourceBundle("en", "translation", skillsExtraEn, true, false);
+i18n.addResourceBundle("zh-TW", "translation", skillsExtraZhTW, true, false);
 
 /** Sentinel value for the "no pin / live default" option (Radix forbids ""). */
 export const RELEASE_DEFAULT_VALUE = "default";
-
-const DEFAULT_LABEL = "Default — current (recommended)";
 
 /**
  * Render a bundled release's calendar date. Plain `YYYY-MM-DD` strings (like the
@@ -68,10 +72,12 @@ export function AgentSkillReleasePicker({
   disabled = false,
   onChange,
 }: AgentSkillReleasePickerProps) {
+  const { t } = useTranslation();
+  const defaultLabel = t("skillsExtra.agentSkillRelease.defaultLabel");
   const selected = value ? releases.find((release) => release.id === value) ?? null : null;
   // Closed trigger shows the release name only; the `· released <date>` suffix
   // lives in the open menu, where dates are meaningful for comparing options.
-  const triggerLabel = selected ? releaseName(selected) : DEFAULT_LABEL;
+  const triggerLabel = selected ? releaseName(selected) : defaultLabel;
 
   return (
     <Select
@@ -82,22 +88,28 @@ export function AgentSkillReleasePicker({
       <SelectTrigger
         size="sm"
         className="w-full max-w-(--sz-16rem) sm:w-(--sz-16rem)"
-        aria-label="Skill release"
+        aria-label={t("skillsExtra.agentSkillRelease.ariaLabel")}
       >
-        <SelectValue placeholder={DEFAULT_LABEL}>{triggerLabel}</SelectValue>
+        <SelectValue placeholder={defaultLabel}>{triggerLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent align="end" className="max-w-(--sz-20rem)">
-        <SelectItem value={RELEASE_DEFAULT_VALUE}>{DEFAULT_LABEL}</SelectItem>
-        {releases.map((release) => (
+        <SelectItem value={RELEASE_DEFAULT_VALUE}>{defaultLabel}</SelectItem>
+        {releases.map((release) => {
+          const date = formatReleaseDate(release.releasedAt);
+          const optionLabel = date
+            ? t("skillsExtra.agentSkillRelease.released", { name: releaseName(release), date })
+            : releaseName(release);
+          return (
           <SelectItem key={release.id} value={release.id}>
             <span className="flex items-center gap-2">
-              <span className="truncate">{releaseOptionLabel(release)}</span>
+              <span className="truncate">{optionLabel}</span>
               <Badge variant="secondary" className="shrink-0 text-(length:--text-nano)">
-                Beta
+                {t("skillsExtra.agentSkillRelease.beta")}
               </Badge>
             </span>
           </SelectItem>
-        ))}
+          );
+        })}
       </SelectContent>
     </Select>
   );

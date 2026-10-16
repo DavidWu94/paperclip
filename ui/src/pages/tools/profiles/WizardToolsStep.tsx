@@ -21,7 +21,6 @@ import {
   toggleApp,
   toggleTool,
   toolCapability,
-  CAPABILITY_LABEL,
   type AdvancedRule,
   type AdvancedRuleKind,
   type AppGroup,
@@ -29,6 +28,36 @@ import {
   type WizardSelections,
 } from "./profile-model";
 import { LoadingState } from "../shared";
+import { i18n, useTranslation } from "@/i18n";
+import skillsExtraEn from "@/i18n/partials/skills.en.json";
+import skillsExtraZhTW from "@/i18n/partials/skills.zh-TW.json";
+
+i18n.addResourceBundle("en", "translation", skillsExtraEn, true, false);
+i18n.addResourceBundle("zh-TW", "translation", skillsExtraZhTW, true, false);
+
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+function capabilityText(cap: ToolCapability, t: Translate) {
+  if (cap === "read") return t("skillsExtra.wizard.readOnly");
+  if (cap === "write") return t("skillsExtra.wizard.makesChanges");
+  return t("skillsExtra.wizard.destructive");
+}
+
+function ruleText(rule: AdvancedRule, t: Translate) {
+  if (rule.kind === "tool_name") {
+    return t(rule.effect === "include" ? "skillsExtra.wizard.allowMatch" : "skillsExtra.wizard.blockMatch", {
+      pattern: rule.value,
+    });
+  }
+  if (rule.kind === "risk_level") {
+    return t(rule.effect === "include" ? "skillsExtra.wizard.allowRisk" : "skillsExtra.wizard.blockRisk", {
+      risk: rule.riskLevel ?? rule.value,
+    });
+  }
+  return t(rule.effect === "include" ? "skillsExtra.wizard.allowTool" : "skillsExtra.wizard.blockTool", {
+    id: rule.value,
+  });
+}
 
 type NewToolsAction = "deny" | "allow";
 
@@ -52,6 +81,7 @@ export interface WizardToolsStepProps {
 }
 
 export function WizardToolsStep(props: WizardToolsStepProps) {
+  const { t } = useTranslation();
   const { appGroups, catalogLoading, selections, onSelectionsChange } = props;
   const [search, setSearch] = useState("");
   const [capabilityFilter, setCapabilityFilter] = useState<ToolCapability | null>(null);
@@ -74,7 +104,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       .filter((entry) => entry.tools.length > 0);
   }, [appGroups, search, capabilityFilter]);
 
-  if (catalogLoading) return <LoadingState label="Loading tools…" />;
+  if (catalogLoading) return <LoadingState label={t("skillsExtra.wizard.loadingTools")} />;
 
   // Cold state A (AP17): nothing connected at all.
   if (appGroups.length === 0) {
@@ -82,14 +112,13 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border py-12 text-center">
         <Plug className="h-6 w-6 text-muted-foreground" />
         <div>
-          <p className="text-sm font-medium text-foreground">App connections are coming soon</p>
+          <p className="text-sm font-medium text-foreground">{t("skillsExtra.wizard.connectionsSoon")}</p>
           <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-            Profiles will be available once app connections are ready. Browse the planned integrations in the
-            meantime.
+            {t("skillsExtra.wizard.connectionsSoonBody")}
           </p>
         </div>
         <Button asChild variant="outline">
-          <Link to="/apps">Browse app connections</Link>
+          <Link to="/apps">{t("skillsExtra.wizard.browseConnections")}</Link>
         </Button>
       </div>
     );
@@ -103,7 +132,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tools…"
+            placeholder={t("skillsExtra.wizard.searchTools")}
             className="pl-8"
           />
         </div>
@@ -120,7 +149,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
                   : "border-border text-muted-foreground hover:bg-accent",
               )}
             >
-              {CAPABILITY_LABEL[cap]}
+              {capabilityText(cap, t)}
             </button>
           ))}
         </div>
@@ -129,7 +158,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       {filteredGroups.length === 0 ? (
         // Cold state B (AP17): a search/filter that matches nothing.
         <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-10 text-center">
-          <p className="text-sm font-medium text-foreground">No tools match “{search}”.</p>
+          <p className="text-sm font-medium text-foreground">{t("skillsExtra.wizard.noMatch", { search })}</p>
           <button
             type="button"
             onClick={() => {
@@ -138,7 +167,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
             }}
             className="text-sm font-medium text-primary hover:underline"
           >
-            Clear search
+            {t("skillsExtra.wizard.clearSearch")}
           </button>
         </div>
       ) : (
@@ -183,6 +212,7 @@ function AppRow({
   onToggleApp: () => void;
   onToggleTool: (toolId: string) => void;
 }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const state = appCheckState(group, selection);
   const checked = state === "checked" ? true : state === "indeterminate" ? "indeterminate" : false;
@@ -190,7 +220,7 @@ function AppRow({
   return (
     <div>
       <div className="flex items-center gap-2.5 px-3 py-2">
-        <Checkbox checked={checked} onCheckedChange={onToggleApp} aria-label={`All ${group.name} tools`} />
+        <Checkbox checked={checked} onCheckedChange={onToggleApp} aria-label={t("skillsExtra.wizard.allTools", { name: group.name })} />
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
@@ -232,7 +262,7 @@ function AppRow({
                   <span className="flex flex-wrap items-center gap-2">
                     <code className="font-mono text-xs text-foreground">{tool.toolName}</code>
                     <Badge variant={CAPABILITY_VARIANT[cap]} className="text-(length:--text-nano)">
-                      {CAPABILITY_LABEL[cap]}
+                      {capabilityText(cap, t)}
                     </Badge>
                   </span>
                   {tool.title || tool.description ? (
@@ -255,22 +285,23 @@ function NewToolsRadio({
   value: NewToolsAction;
   onChange: (next: NewToolsAction) => void;
 }) {
+  const { t } = useTranslation();
   const options: Array<{ value: NewToolsAction; label: string; hint: string; recommended?: boolean }> = [
     {
       value: "deny",
-      label: "Stay blocked until someone allows them",
-      hint: "New tools an app adds later won't be usable until you review them.",
+      label: t("skillsExtra.wizard.stayBlocked"),
+      hint: t("skillsExtra.wizard.stayBlockedHint"),
       recommended: true,
     },
     {
       value: "allow",
-      label: "Allowed automatically",
-      hint: "Any tool an app adds later becomes usable right away.",
+      label: t("skillsExtra.wizard.allowedAuto"),
+      hint: t("skillsExtra.wizard.allowedAutoHint"),
     },
   ];
   return (
     <fieldset className="space-y-2 rounded-lg border border-border p-4">
-      <legend className="px-1 text-sm font-medium text-foreground">New tools that appear later</legend>
+      <legend className="px-1 text-sm font-medium text-foreground">{t("skillsExtra.wizard.newToolsLater")}</legend>
       <div className="space-y-2">
         {options.map((opt) => (
           <label key={opt.value} className="flex cursor-pointer items-start gap-2.5">
@@ -286,10 +317,10 @@ function NewToolsRadio({
                 {opt.label}
                 {opt.recommended ? (
                   <Badge variant="outline" className="text-(length:--text-nano)">
-                    Recommended
+                    {t("skillsExtra.wizard.recommended")}
                   </Badge>
                 ) : (
-                  <span className="text-xs font-normal text-amber-600">(risky)</span>
+                  <span className="text-xs font-normal text-amber-600">{t("skillsExtra.wizard.risky")}</span>
                 )}
               </span>
               <span className="text-xs text-muted-foreground">{opt.hint}</span>
@@ -313,13 +344,6 @@ function createAdvancedRuleId() {
   return `rule-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function ruleSummary(rule: AdvancedRule): string {
-  const verb = rule.effect === "include" ? "Allow" : "Block";
-  if (rule.kind === "tool_name") return `${verb} tools matching ${rule.value}`;
-  if (rule.kind === "risk_level") return `${verb} ${rule.riskLevel ?? rule.value} tools`;
-  return `${verb} tool ${rule.value}`;
-}
-
 function AdvancedRules({
   rules,
   onChange,
@@ -327,6 +351,7 @@ function AdvancedRules({
   rules: AdvancedRule[];
   onChange: (next: AdvancedRule[]) => void;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<AdvancedRuleKind>("tool_name");
   const [value, setValue] = useState("");
@@ -349,13 +374,12 @@ function AdvancedRules({
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="rounded-lg border border-border">
       <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left">
-        <span className="text-sm font-medium text-foreground">Advanced rules</span>
+        <span className="text-sm font-medium text-foreground">{t("skillsExtra.wizard.advancedRules")}</span>
         <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-3 border-t border-border px-4 py-3">
         <p className="text-xs text-muted-foreground">
-          Match tools by a name pattern, a risk level, or a specific tool ID. These run on top of the choices
-          above.
+          {t("skillsExtra.wizard.advancedRulesBody")}
         </p>
 
         {rules.length > 0 ? (
@@ -365,10 +389,10 @@ function AdvancedRules({
                 key={rule.id}
                 className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/30 px-3 py-1.5 text-sm"
               >
-                <span className="text-foreground">{ruleSummary(rule)}</span>
+                <span className="text-foreground">{ruleText(rule, t)}</span>
                 <button
                   type="button"
-                  aria-label="Remove rule"
+                  aria-label={t("skillsExtra.wizard.removeRule")}
                   onClick={() => onChange(rules.filter((r) => r.id !== rule.id))}
                   className="text-muted-foreground hover:text-destructive"
                 >
@@ -385,8 +409,8 @@ function AdvancedRules({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="include">Allow</SelectItem>
-              <SelectItem value="exclude">Block</SelectItem>
+              <SelectItem value="include">{t("skillsExtra.wizard.allow")}</SelectItem>
+              <SelectItem value="exclude">{t("skillsExtra.wizard.block")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={kind} onValueChange={(v) => setKind(v as AdvancedRuleKind)}>
@@ -396,7 +420,11 @@ function AdvancedRules({
             <SelectContent>
               {RULE_KIND_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {opt.value === "tool_name"
+                    ? t("skillsExtra.wizard.toolNamePattern")
+                    : opt.value === "risk_level"
+                      ? t("skillsExtra.wizard.riskLevel")
+                      : t("skillsExtra.wizard.byToolId")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -407,22 +435,22 @@ function AdvancedRules({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="read">Read-only</SelectItem>
-                <SelectItem value="write">Makes changes</SelectItem>
-                <SelectItem value="destructive">Destructive</SelectItem>
+                <SelectItem value="read">{t("skillsExtra.wizard.readOnly")}</SelectItem>
+                <SelectItem value="write">{t("skillsExtra.wizard.makesChanges")}</SelectItem>
+                <SelectItem value="destructive">{t("skillsExtra.wizard.destructive")}</SelectItem>
               </SelectContent>
             </Select>
           ) : (
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder={kind === "tool_name" ? "e.g. gmail.send*" : "tool ID"}
+              placeholder={kind === "tool_name" ? t("skillsExtra.wizard.patternPlaceholder") : t("skillsExtra.wizard.toolIdPlaceholder")}
               className="w-44"
             />
           )}
           <Button type="button" variant="outline" size="sm" onClick={addRule}>
             <Plus className="mr-1 h-3.5 w-3.5" />
-            Add rule
+            {t("skillsExtra.wizard.addRule")}
           </Button>
         </div>
       </CollapsibleContent>

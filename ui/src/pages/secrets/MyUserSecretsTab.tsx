@@ -12,10 +12,15 @@ import { useToastActions } from "../../context/ToastContext";
 import { SetMyUserSecretDialog } from "./SetMyUserSecretDialog";
 import { SecretPathName } from "./SecretPathName";
 import {
-  myValueLabel,
   myValueState,
   myValueTone,
 } from "./my-value-state";
+import { i18n, useTranslation } from "@/i18n";
+import skillsExtraEn from "@/i18n/partials/skills.en.json";
+import skillsExtraZhTW from "@/i18n/partials/skills.zh-TW.json";
+
+i18n.addResourceBundle("en", "translation", skillsExtraEn, true, false);
+i18n.addResourceBundle("zh-TW", "translation", skillsExtraZhTW, true, false);
 
 /**
  * Secrets → My secrets tab. Lists every company user-secret definition paired
@@ -24,6 +29,7 @@ import {
  * "User secret definitions" tab.
  */
 export function MyUserSecretsTab({ companyId }: { companyId: string }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [dialogFor, setDialogFor] = useState<MyUserSecretEntry | null>(null);
@@ -38,11 +44,11 @@ export function MyUserSecretsTab({ companyId }: { companyId: string }) {
     mutationFn: (secret: CompanySecret) => secretsApi.removeMyUserSecret(companyId, secret.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.myUserSecrets(companyId) });
-      pushToast({ title: "Value cleared", tone: "info" });
+      pushToast({ title: t("skillsExtra.userSecrets.valueCleared"), tone: "info" });
     },
     onError: (err) =>
       pushToast({
-        title: "Could not clear value",
+        title: t("skillsExtra.userSecrets.clearFailed"),
         body: err instanceof Error ? err.message : undefined,
         tone: "error",
       }),
@@ -57,13 +63,14 @@ export function MyUserSecretsTab({ companyId }: { companyId: string }) {
       <div className="flex items-start gap-2 rounded-md border border-violet-500/30 bg-violet-500/5 px-4 py-3 text-xs text-violet-800 dark:text-violet-200">
         <UserRound className="h-4 w-4 mt-0.5 shrink-0" />
         <p>
-          These are credentials only you provide. Each value is yours alone — used when you are the
-          user responsible for a run — and is never shown back to anyone, including admins.
+          {t("skillsExtra.userSecrets.intro")}
           {missingCount > 0 ? (
             <span className="font-medium">
               {" "}
-              {missingCount} required secret{missingCount === 1 ? " still needs" : "s still need"} your
-              value.
+              {t(
+                missingCount === 1 ? "skillsExtra.userSecrets.missingOne" : "skillsExtra.userSecrets.missingOther",
+                { count: missingCount },
+              )}
             </span>
           ) : null}
         </p>
@@ -72,16 +79,16 @@ export function MyUserSecretsTab({ companyId }: { companyId: string }) {
       <div>
         {mySecretsQuery.isError ? (
           <div className="flex items-center gap-2 py-4 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4" /> Failed to load your secrets:{" "}
-            {(mySecretsQuery.error as Error).message}
+            <AlertCircle className="h-4 w-4" />{" "}
+            {t("skillsExtra.userSecrets.loadFailed", { message: (mySecretsQuery.error as Error).message })}
             <Button variant="ghost" size="sm" onClick={() => mySecretsQuery.refetch()}>
-              Retry
+              {t("skillsExtra.common.retry")}
             </Button>
           </div>
         ) : entries.length === 0 && !mySecretsQuery.isPending ? (
           <EmptyState
             icon={KeyRound}
-            message="No user secrets are defined for this organization yet. An admin defines which credentials each member supplies."
+            message={t("skillsExtra.userSecrets.empty")}
           />
         ) : (
           <ul className="space-y-2">
@@ -122,8 +129,15 @@ function MyUserSecretRow({
   onClear: () => void;
   clearing: boolean;
 }) {
+  const { t } = useTranslation();
   const { definition, secret } = entry;
   const state = myValueState(definition, secret);
+  const valueLabel =
+    state === "set"
+      ? t("skillsExtra.userSecrets.valueSet")
+      : state === "not_set"
+        ? t("skillsExtra.userSecrets.notSet")
+        : t("skillsExtra.userSecrets.disabled");
   const disabledDefinition = definition.status !== "active";
 
   return (
@@ -157,11 +171,11 @@ function MyUserSecretRow({
 
       <div className="flex shrink-0 items-center gap-2">
         <Badge variant="outline" className={cn("text-(length:--text-micro)", myValueTone(state))}>
-          {myValueLabel(state)}
+          {valueLabel}
         </Badge>
         {!disabledDefinition ? (
           <Button size="sm" variant={secret ? "outline" : "default"} onClick={onSet}>
-            {secret ? "Update" : "Set value"}
+            {secret ? t("skillsExtra.common.update") : t("skillsExtra.userSecrets.setValue")}
           </Button>
         ) : null}
         {secret ? (
@@ -171,7 +185,7 @@ function MyUserSecretRow({
             className="text-muted-foreground hover:text-destructive"
             onClick={onClear}
             disabled={clearing}
-            title="Clear my value"
+            title={t("skillsExtra.userSecrets.clearTitle")}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

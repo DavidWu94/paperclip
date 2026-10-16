@@ -28,10 +28,15 @@ import { queryKeys } from "../../lib/queryKeys";
 import { cn } from "../../lib/utils";
 import { useToastActions } from "../../context/ToastContext";
 import {
-  coverageSummaryLabel,
   secretStatusTone,
   UserSecretChip,
 } from "./user-secret-presentation";
+import { i18n, useTranslation } from "@/i18n";
+import skillsExtraEn from "@/i18n/partials/skills.en.json";
+import skillsExtraZhTW from "@/i18n/partials/skills.zh-TW.json";
+
+i18n.addResourceBundle("en", "translation", skillsExtraEn, true, false);
+i18n.addResourceBundle("zh-TW", "translation", skillsExtraZhTW, true, false);
 
 function keyFromName(name: string): string {
   return name
@@ -64,6 +69,7 @@ const emptyForm: DefinitionForm = {
  * only — never values — per the UX terminology decisions.
  */
 export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -123,14 +129,14 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
     onSuccess: (definition) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.userDefinitions(companyId) });
       pushToast({
-        title: editing ? "Definition updated" : "Definition created",
+        title: editing ? t("skillsExtra.userSecrets.definitionUpdated") : t("skillsExtra.userSecrets.definitionCreated"),
         body: definition.name,
         tone: "success",
       });
       setDialogOpen(false);
     },
     onError: (err) =>
-      setError(err instanceof ApiError || err instanceof Error ? err.message : "Failed to save"),
+      setError(err instanceof ApiError || err instanceof Error ? err.message : t("skillsExtra.userSecrets.saveDefinitionFailed")),
   });
 
   const remove = useMutation({
@@ -138,12 +144,12 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
       secretsApi.removeUserSecretDefinition(companyId, definition.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.userDefinitions(companyId) });
-      pushToast({ title: "Definition removed", tone: "info" });
+      pushToast({ title: t("skillsExtra.userSecrets.definitionRemoved"), tone: "info" });
       setDeleteTarget(null);
     },
     onError: (err) =>
       pushToast({
-        title: "Could not remove definition",
+        title: t("skillsExtra.userSecrets.removeFailed"),
         body: err instanceof Error ? err.message : undefined,
         tone: "error",
       }),
@@ -156,32 +162,32 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
       <div className="flex items-start gap-2 rounded-md border border-violet-500/30 bg-violet-500/5 px-4 py-3 text-xs text-violet-800 dark:text-violet-200">
         <UserRound className="h-4 w-4 mt-0.5 shrink-0" />
         <p>
-          Define credentials that <span className="font-medium">each member supplies for
-          themselves</span>. You set the shape here; every user enters their own value under My
-          secrets. Coverage shows how many members have set a value — never the values themselves.
+          {t("skillsExtra.userSecrets.definitionsIntro")}
         </p>
       </div>
 
       <div className="flex items-center justify-end">
         <Button size="sm" onClick={openCreate}>
-          <Plus className="mr-1 h-3.5 w-3.5" /> New user secret
+          <Plus className="mr-1 h-3.5 w-3.5" /> {t("skillsExtra.userSecrets.newUserSecret")}
         </Button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {definitionsQuery.isError ? (
           <div className="flex items-center gap-2 py-4 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4" /> Failed to load definitions:{" "}
-            {(definitionsQuery.error as Error).message}
+            <AlertCircle className="h-4 w-4" />{" "}
+            {t("skillsExtra.userSecrets.definitionsLoadFailed", {
+              message: (definitionsQuery.error as Error).message,
+            })}
             <Button variant="ghost" size="sm" onClick={() => definitionsQuery.refetch()}>
-              Retry
+              {t("skillsExtra.common.retry")}
             </Button>
           </div>
         ) : definitions.length === 0 && !definitionsQuery.isPending ? (
           <EmptyState
             icon={UserRound}
-            message="No user secret definitions yet. Create one to require each member to supply their own credential."
-            action="New user secret"
+            message={t("skillsExtra.userSecrets.definitionsEmpty")}
+            action={t("skillsExtra.userSecrets.newUserSecret")}
             onAction={openCreate}
           />
         ) : (
@@ -234,17 +240,17 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {editing ? "Edit user secret" : "New user secret"}
+              {editing ? t("skillsExtra.userSecrets.editTitle") : t("skillsExtra.userSecrets.newUserSecret")}
               <UserSecretChip />
             </DialogTitle>
             <DialogDescription>
-              Members supply their own value for this credential. No value is entered here.
+              {t("skillsExtra.userSecrets.membersSupply")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Name</label>
+              <label className="text-xs font-medium text-foreground">{t("skillsExtra.common.name")}</label>
               <Input
                 value={form.name}
                 onChange={(event) => {
@@ -255,52 +261,53 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                     key: keyDirty ? current.key : keyFromName(name),
                   }));
                 }}
-                placeholder="Personal GitHub token"
+                placeholder={t("skillsExtra.userSecrets.namePlaceholder")}
                 autoFocus
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Key</label>
+              <label className="text-xs font-medium text-foreground">{t("skillsExtra.common.key")}</label>
               <Input
                 value={form.key}
                 onChange={(event) => {
                   setKeyDirty(true);
                   setForm((current) => ({ ...current, key: event.target.value }));
                 }}
-                placeholder="PERSONAL_GH_TOKEN"
+                placeholder={t("skillsExtra.userSecrets.keyPlaceholder")}
                 className="font-mono text-sm"
                 disabled={Boolean(editing)}
               />
               <p className="text-(length:--text-micro) text-muted-foreground">
-                Stable identifier referenced by env bindings. {editing ? "Cannot be changed." : ""}
+                {t("skillsExtra.userSecrets.keyHelp")} {editing ? t("skillsExtra.userSecrets.keyLocked") : ""}
               </p>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Description</label>
+              <label className="text-xs font-medium text-foreground">{t("skillsExtra.common.description")}</label>
               <Input
                 value={form.description}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, description: event.target.value }))
                 }
-                placeholder="What this credential is for"
+                placeholder={t("skillsExtra.userSecrets.descriptionPlaceholder")}
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-foreground">
-                Usage guidance <span className="text-muted-foreground">(optional)</span>
+                {t("skillsExtra.userSecrets.usageLabel")}{" "}
+                <span className="text-muted-foreground">({t("skillsExtra.common.optional")})</span>
               </label>
               <Textarea
                 value={form.usageGuidance}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, usageGuidance: event.target.value }))
                 }
-                placeholder="Tell members how to create their token, required scopes, etc."
+                placeholder={t("skillsExtra.userSecrets.usagePlaceholder")}
                 className="min-h-(--sz-70px) text-sm"
               />
             </div>
             {editing ? (
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Status</label>
+                <label className="text-xs font-medium text-foreground">{t("skillsExtra.common.status")}</label>
                 <Select
                   value={form.status}
                   onValueChange={(status) =>
@@ -311,9 +318,9 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="disabled">Disabled</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
+                    <SelectItem value="active">{t("skillsExtra.common.active")}</SelectItem>
+                    <SelectItem value="disabled">{t("skillsExtra.common.disabled")}</SelectItem>
+                    <SelectItem value="archived">{t("skillsExtra.common.archived")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -323,10 +330,14 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
 
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDialogOpen(false)} disabled={save.isPending}>
-              Cancel
+              {t("skillsExtra.common.cancel")}
             </Button>
             <Button onClick={() => save.mutate()} disabled={!canSave || save.isPending}>
-              {save.isPending ? "Saving…" : editing ? "Save changes" : "Create"}
+              {save.isPending
+                ? t("skillsExtra.common.saving")
+                : editing
+                  ? t("skillsExtra.common.saveChanges")
+                  : t("skillsExtra.common.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -336,22 +347,21 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
       <Dialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove user secret?</DialogTitle>
+            <DialogTitle>{t("skillsExtra.userSecrets.removeTitle")}</DialogTitle>
             <DialogDescription>
-              This removes the definition <span className="font-mono">{deleteTarget?.key}</span> for
-              the whole company. Existing member values become unreferenced. This cannot be undone.
+              {t("skillsExtra.userSecrets.removeBody", { key: deleteTarget?.key ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={remove.isPending}>
-              Cancel
+              {t("skillsExtra.common.cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={() => deleteTarget && remove.mutate(deleteTarget)}
               disabled={remove.isPending}
             >
-              {remove.isPending ? "Removing…" : "Remove"}
+              {remove.isPending ? t("skillsExtra.common.removing") : t("skillsExtra.common.remove")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -372,14 +382,21 @@ function CoverageBadge({
     queryFn: () => secretsApi.userSecretDefinitionCoverage(companyId, definitionId),
     staleTime: 30_000,
   });
+  const { t } = useTranslation();
   const summary = coverageQuery.data;
   const missing = summary ? summary.missingCount : 0;
+  const total = summary ? summary.configuredCount + summary.missingCount + summary.inactiveCount : 0;
+  const summaryLabel = summary
+    ? t("skillsExtra.userSecrets.coverage", { configured: summary.configuredCount, total })
+    : "—";
   return (
     <p className="mt-1 inline-flex items-center gap-1 text-(length:--text-micro) text-muted-foreground">
       <Users className="h-3 w-3" />
-      Coverage: {coverageSummaryLabel(summary)}
+      {t("skillsExtra.userSecrets.coveragePrefix", { summary: summaryLabel })}
       {summary && missing > 0 ? (
-        <span className="text-amber-600 dark:text-amber-400">· {missing} not set</span>
+        <span className="text-amber-600 dark:text-amber-400">
+          {t("skillsExtra.userSecrets.missingNotSet", { count: missing })}
+        </span>
       ) : null}
     </p>
   );

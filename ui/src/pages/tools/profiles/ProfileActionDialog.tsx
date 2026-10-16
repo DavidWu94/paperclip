@@ -9,6 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { i18n, useTranslation } from "@/i18n";
+import skillsExtraEn from "@/i18n/partials/skills.en.json";
+import skillsExtraZhTW from "@/i18n/partials/skills.zh-TW.json";
+
+i18n.addResourceBundle("en", "translation", skillsExtraEn, true, false);
+i18n.addResourceBundle("zh-TW", "translation", skillsExtraZhTW, true, false);
 
 export type ProfileActionDialogKind = "archive" | "delete" | "restore";
 
@@ -29,28 +35,39 @@ export function ProfileActionDialog({
   onRestore: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
   if (!kind || !profile) return null;
 
   const defaultDeleteBlocked = kind === "delete" && profile.summary.isCompanyDefault;
   const copy = {
     archive: {
-      title: "Archive profile",
-      body: `This profile stops applying to ${profile.summary.appliesToAgentCount} ${profile.summary.appliesToAgentCount === 1 ? "agent" : "agents"}. You can restore it later.`,
-      confirm: "Archive",
+      title: t("skillsExtra.tools.archiveTitle"),
+      body: t(
+        profile.summary.appliesToAgentCount === 1
+          ? "skillsExtra.tools.archiveBodyOne"
+          : "skillsExtra.tools.archiveBodyOther",
+        { count: profile.summary.appliesToAgentCount },
+      ),
+      confirm: t("skillsExtra.common.archive"),
       action: onArchive,
     },
     restore: {
-      title: "Restore profile",
-      body: "This profile will be active again and can be assigned to agents.",
-      confirm: "Restore",
+      title: t("skillsExtra.tools.restoreTitle"),
+      body: t("skillsExtra.tools.restoreBody"),
+      confirm: t("skillsExtra.common.restore"),
       action: onRestore,
     },
     delete: {
-      title: "Delete profile",
+      title: t("skillsExtra.tools.deleteTitle"),
       body: defaultDeleteBlocked
-        ? "This profile is the organization default. Reassign the organization default to another profile before deleting it."
-        : `This permanently deletes the profile and removes ${profile.summary.assignmentCount} ${profile.summary.assignmentCount === 1 ? "assignment" : "assignments"}.`,
-      confirm: "Delete",
+        ? t("skillsExtra.tools.deleteBlockedBody")
+        : t(
+            profile.summary.assignmentCount === 1
+              ? "skillsExtra.tools.deleteBodyOne"
+              : "skillsExtra.tools.deleteBodyOther",
+            { count: profile.summary.assignmentCount },
+          ),
+      confirm: t("skillsExtra.common.delete"),
       action: onDelete,
     },
   }[kind];
@@ -65,11 +82,11 @@ export function ProfileActionDialog({
         {defaultDeleteBlocked ? (
           <div className="flex gap-3 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Choose another access profile and make it the organization default first.</span>
+            <span>{t("skillsExtra.tools.deleteBlockedHint")}</span>
           </div>
         ) : null}
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose}>{t("skillsExtra.common.cancel")}</Button>
           <Button
             variant={kind === "delete" ? "destructive" : "default"}
             disabled={pending || defaultDeleteBlocked}

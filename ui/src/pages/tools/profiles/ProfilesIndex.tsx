@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArchiveRestore, MoreHorizontal, Plus, ShieldCheck, Users } from "lucide-react";
-import type { ToolProfileWithDetails } from "@paperclipai/shared";
+import type { ToolProfileStatus, ToolProfileSummary, ToolProfileWithDetails } from "@paperclipai/shared";
 import { useNavigate } from "@/lib/router";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";
@@ -28,7 +28,107 @@ import { ErrorState, LoadingState, RelativeTime, ToolsPageHeader } from "../shar
 import { ProfileActionDialog, type ProfileActionDialogKind } from "./ProfileActionDialog";
 import { TEMPLATES, type TemplateKey } from "./profile-model";
 import { useProfilesData } from "./useProfilesData";
-import { allowsLabel, assignedLabel, isDraft, STATUS_LABEL } from "./profile-summary";
+import { isDraft } from "./profile-summary";
+import { i18n, useTranslation } from "@/i18n";
+import skillsExtraEn from "@/i18n/partials/skills.en.json";
+import skillsExtraZhTW from "@/i18n/partials/skills.zh-TW.json";
+i18n.addResourceBundle("en", "translation", skillsExtraEn, true, false);
+i18n.addResourceBundle("zh-TW", "translation", skillsExtraZhTW, true, false);
+
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+function countText(count: number, oneKey: string, otherKey: string, t: Translate) {
+  return t(count === 1 ? oneKey : otherKey, { count });
+}
+
+function allowsText(summary: ToolProfileSummary, t: Translate) {
+  if (summary.accessMode === "all_except") {
+    return summary.excludedToolCount === 0
+      ? t("skillsExtra.profilesIndex.allTools")
+      : countText(
+          summary.excludedToolCount,
+          "skillsExtra.profilesIndex.exceptOne",
+          "skillsExtra.profilesIndex.exceptOther",
+          t,
+        );
+  }
+  const parts = [
+    countText(summary.allowedToolCount, "skillsExtra.profilesIndex.toolOne", "skillsExtra.profilesIndex.toolOther", t),
+  ];
+  if (summary.allowedApplicationCount > 0) {
+    parts.push(
+      countText(summary.allowedApplicationCount, "skillsExtra.profilesIndex.appOne", "skillsExtra.profilesIndex.appOther", t),
+    );
+  }
+  return parts.join(" · ");
+}
+
+function assignedText(summary: ToolProfileSummary, t: Translate) {
+  if (summary.isCompanyDefault) return { text: t("skillsExtra.profilesIndex.orgDefault"), unassigned: false };
+  if (summary.appliesToAgentCount > 0) {
+    return {
+      text: countText(summary.appliesToAgentCount, "skillsExtra.profilesIndex.agentOne", "skillsExtra.profilesIndex.agentOther", t),
+      unassigned: false,
+    };
+  }
+  if (summary.assignmentCount > 0) {
+    return {
+      text: countText(
+        summary.assignmentCount,
+        "skillsExtra.profilesIndex.assignmentOne",
+        "skillsExtra.profilesIndex.assignmentOther",
+        t,
+      ),
+      unassigned: false,
+    };
+  }
+  return { text: t("skillsExtra.profilesIndex.notAssigned"), unassigned: true };
+}
+
+function statusText(status: ToolProfileStatus, t: Translate) {
+  switch (status) {
+    case "draft":
+      return t("skillsExtra.profilesIndex.draft");
+    case "active":
+      return t("skillsExtra.common.active");
+    case "disabled":
+      return t("skillsExtra.profilesIndex.off");
+    case "archived":
+      return t("skillsExtra.common.archived");
+    default:
+      return status;
+  }
+}
+
+function templateCopy(key: TemplateKey, t: Translate) {
+  switch (key) {
+    case "read_only":
+      return {
+        title: t("skillsExtra.profileTemplates.readOnlyTitle"),
+        description: t("skillsExtra.profileTemplates.readOnlyBody"),
+      };
+    case "everyday":
+      return {
+        title: t("skillsExtra.profileTemplates.everydayTitle"),
+        description: t("skillsExtra.profileTemplates.everydayBody"),
+      };
+    case "full_access":
+      return {
+        title: t("skillsExtra.profileTemplates.fullAccessTitle"),
+        description: t("skillsExtra.profileTemplates.fullAccessBody"),
+      };
+    case "scratch":
+      return {
+        title: t("skillsExtra.profileTemplates.scratchTitle"),
+        description: t("skillsExtra.profileTemplates.scratchBody"),
+      };
+    case "copy":
+      return {
+        title: t("skillsExtra.profileTemplates.copyTitle"),
+        description: t("skillsExtra.profileTemplates.copyBody"),
+      };
+  }
+}
 
 /** The wizard route for a fresh profile, optionally seeded with a template. */
 function newProfileHref(template?: TemplateKey): string {
@@ -52,6 +152,7 @@ export function ProfilesIndex({
   initialStatusFilter?: "active" | "archived";
   initialResolverOpen?: boolean;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -83,55 +184,55 @@ export function ProfilesIndex({
     mutationFn: (profile: ToolProfileWithDetails) =>
       toolsApi.duplicateProfile(profile.id, { name: `${profile.name} (copy)` }),
     onSuccess: () => {
-      pushToast({ title: "Profile duplicated", body: "The copy is not assigned to anyone yet.", tone: "success" });
+      pushToast({ title: t("skillsExtra.profilesIndex.duplicated"), body: t("skillsExtra.profilesIndex.duplicatedBody"), tone: "success" });
       invalidate();
     },
     onError: (error: unknown) =>
-      pushToast({ title: "Could not duplicate", body: errorBody(error), tone: "error" }),
+      pushToast({ title: t("skillsExtra.profilesIndex.duplicateFailed"), body: errorBody(error), tone: "error" }),
   });
 
   const archive = useMutation({
     mutationFn: (profile: ToolProfileWithDetails) =>
       toolsApi.updateProfile(profile.id, { status: "archived" }),
     onSuccess: () => {
-      pushToast({ title: "Profile archived", tone: "success" });
+      pushToast({ title: t("skillsExtra.profilesIndex.archived"), tone: "success" });
       invalidate();
     },
-    onError: (error: unknown) => pushToast({ title: "Could not archive", body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) => pushToast({ title: t("skillsExtra.profilesIndex.archiveFailed"), body: errorBody(error), tone: "error" }),
   });
 
   const restore = useMutation({
     mutationFn: (profile: ToolProfileWithDetails) =>
       toolsApi.updateProfile(profile.id, { status: "active" }),
     onSuccess: () => {
-      pushToast({ title: "Profile restored", tone: "success" });
+      pushToast({ title: t("skillsExtra.profilesIndex.restored"), tone: "success" });
       invalidate();
     },
-    onError: (error: unknown) => pushToast({ title: "Could not restore", body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) => pushToast({ title: t("skillsExtra.profilesIndex.restoreFailed"), body: errorBody(error), tone: "error" }),
   });
 
   const remove = useMutation({
     mutationFn: (profile: ToolProfileWithDetails) => toolsApi.deleteProfile(profile.id),
     onSuccess: () => {
-      pushToast({ title: "Profile deleted", tone: "success" });
+      pushToast({ title: t("skillsExtra.profilesIndex.deleted"), tone: "success" });
       invalidate();
     },
-    onError: (error: unknown) => pushToast({ title: "Could not delete", body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) => pushToast({ title: t("skillsExtra.profilesIndex.deleteFailed"), body: errorBody(error), tone: "error" }),
   });
 
   const header = (
     <ToolsPageHeader
-      title="Access profiles"
-      description="Decide which tools your agents can use. Build a profile once, then assign it to the agents that need it."
+      title={t("skillsExtra.profilesIndex.title")}
+      description={t("skillsExtra.profilesIndex.description")}
       actions={
         <>
           <Button variant="outline" onClick={() => setResolverOpen(true)}>
             <ShieldCheck className="mr-1.5 h-4 w-4" />
-            Check an agent's access
+            {t("skillsExtra.profilesIndex.checkAccess")}
           </Button>
           <Button onClick={() => navigate(newProfileHref())}>
             <Plus className="mr-1.5 h-4 w-4" />
-            New profile
+            {t("skillsExtra.profilesIndex.newProfile")}
           </Button>
         </>
       }
@@ -142,9 +243,9 @@ export function ProfilesIndex({
     <Sheet open={resolverOpen} onOpenChange={setResolverOpen}>
       <SheetContent className="w-full gap-0 p-0 sm:max-w-xl">
         <SheetHeader className="border-b border-border">
-          <SheetTitle>Check an agent's access</SheetTitle>
+          <SheetTitle>{t("skillsExtra.profilesIndex.checkAccess")}</SheetTitle>
           <SheetDescription>
-            See exactly which tools an agent can use right now, and which profile allows each one.
+            {t("skillsExtra.profilesIndex.checkAccessBody")}
           </SheetDescription>
         </SheetHeader>
         <div className="flex min-h-0 flex-1 flex-col p-4">
@@ -158,7 +259,7 @@ export function ProfilesIndex({
     return (
       <div className="space-y-5">
         {header}
-        <LoadingState label="Loading profiles…" />
+        <LoadingState label={t("skillsExtra.profilesIndex.loading")} />
       </div>
     );
   }
@@ -189,7 +290,7 @@ export function ProfilesIndex({
               statusFilter === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
-            {key === "active" ? "Active" : "Archived"}
+            {key === "active" ? t("skillsExtra.common.active") : t("skillsExtra.common.archived")}
           </button>
         ))}
       </div>
@@ -197,7 +298,7 @@ export function ProfilesIndex({
       {rows.length === 0 ? (
         statusFilter === "archived" ? (
           <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-            No archived profiles.
+            {t("skillsExtra.profilesIndex.noArchived")}
           </div>
         ) : (
           <EmptyTemplatePicker onPick={(key) => navigate(newProfileHref(key))} />
@@ -215,17 +316,17 @@ export function ProfilesIndex({
             </colgroup>
             <thead>
               <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Profile</th>
-                <th className="px-3 py-2 font-medium">Allows</th>
-                <th className="px-3 py-2 font-medium">Assigned to</th>
-                <th className="px-3 py-2 font-medium">Status</th>
-                <th className="px-3 py-2 font-medium">Updated</th>
+                <th className="px-3 py-2 font-medium">{t("skillsExtra.profilesIndex.profile")}</th>
+                <th className="px-3 py-2 font-medium">{t("skillsExtra.profilesIndex.allows")}</th>
+                <th className="px-3 py-2 font-medium">{t("skillsExtra.profilesIndex.assignedTo")}</th>
+                <th className="px-3 py-2 font-medium">{t("skillsExtra.common.status")}</th>
+                <th className="px-3 py-2 font-medium">{t("skillsExtra.profilesIndex.updated")}</th>
                 <th className="w-10 px-3 py-2" />
               </tr>
             </thead>
             <tbody>
               {rows.map((profile) => {
-                const assigned = assignedLabel(profile.summary);
+                const assigned = assignedText(profile.summary, t);
                 const draft = isDraft(profile);
                 const open = () => navigate(draft ? `/apps/advanced/profiles/${profile.id}/edit` : `/apps/advanced/profiles/${profile.id}`);
                 return (
@@ -245,10 +346,10 @@ export function ProfilesIndex({
                     </td>
                     <td className="px-3 py-1.5 text-muted-foreground">
                       <span className="inline-flex items-center gap-2">
-                        <span>{allowsLabel(profile.summary)}</span>
+                        <span>{allowsText(profile.summary, t)}</span>
                         {(profile.newToolsPendingCount ?? 0) > 0 ? (
                           <Badge variant="outline" className="border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-200">
-                            {profile.newToolsPendingCount} new
+                            {t("skillsExtra.profilesIndex.newCount", { count: profile.newToolsPendingCount })}
                           </Badge>
                         ) : null}
                       </span>
@@ -257,7 +358,7 @@ export function ProfilesIndex({
                       {assigned.unassigned ? (
                         <span className="text-muted-foreground">
                           {assigned.text}
-                          <span className="ml-1 text-xs text-muted-foreground/70">— does not change access</span>
+                          <span className="ml-1 text-xs text-muted-foreground/70">{t("skillsExtra.profilesIndex.doesNotChange")}</span>
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 text-foreground">
@@ -270,14 +371,14 @@ export function ProfilesIndex({
                     </td>
                     <td className="px-3 py-1.5">
                       <span className="inline-flex items-center gap-2">
-                        <Badge variant={statusVariant(profile.status)}>{STATUS_LABEL[profile.status]}</Badge>
+                        <Badge variant={statusVariant(profile.status)}>{statusText(profile.status, t)}</Badge>
                         {draft ? (
                           <button
                             type="button"
                             onClick={open}
                             className="text-xs font-medium text-primary hover:underline"
                           >
-                            Resume
+                            {t("skillsExtra.profilesIndex.resume")}
                           </button>
                         ) : null}
                       </span>
@@ -338,31 +439,32 @@ function RowMenu({
   onRestore?: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label="Profile actions"
+          aria-label={t("skillsExtra.profilesIndex.actions")}
           className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100 data-[state=open]:opacity-100"
         >
           <MoreHorizontal className="h-4 w-4" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={onEdit}>Edit</DropdownMenuItem>
-        <DropdownMenuItem onSelect={onDuplicate}>Duplicate</DropdownMenuItem>
+        <DropdownMenuItem onSelect={onEdit}>{t("skillsExtra.common.edit")}</DropdownMenuItem>
+        <DropdownMenuItem onSelect={onDuplicate}>{t("skillsExtra.profilesIndex.duplicate")}</DropdownMenuItem>
         {onRestore ? (
           <DropdownMenuItem onSelect={onRestore}>
             <ArchiveRestore className="mr-1.5 h-4 w-4" />
-            Restore
+            {t("skillsExtra.common.restore")}
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem onSelect={onArchive}>Archive</DropdownMenuItem>
+          <DropdownMenuItem onSelect={onArchive}>{t("skillsExtra.common.archive")}</DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive">
-          Delete
+          {t("skillsExtra.common.delete")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -371,12 +473,13 @@ function RowMenu({
 
 /** Empty state (AP2): the same five step-1 template cards the wizard opens with. */
 function EmptyTemplatePicker({ onPick }: { onPick: (key: TemplateKey) => void }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-lg border border-dashed border-border p-6">
       <div className="mb-4 max-w-2xl">
-        <h3 className="text-base font-semibold text-foreground">Create your first access profile</h3>
+        <h3 className="text-base font-semibold text-foreground">{t("skillsExtra.profilesIndex.emptyTitle")}</h3>
         <p className="text-sm text-muted-foreground">
-          Pick a starting point. You can fine-tune exactly which tools it allows in the next step.
+          {t("skillsExtra.profilesIndex.emptyBody")}
         </p>
       </div>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -390,8 +493,8 @@ function EmptyTemplatePicker({ onPick }: { onPick: (key: TemplateKey) => void })
               "hover:border-primary hover:bg-primary/5",
             )}
           >
-            <span className="text-sm font-medium text-foreground">{template.title}</span>
-            <span className="text-xs text-muted-foreground">{template.description}</span>
+            <span className="text-sm font-medium text-foreground">{templateCopy(template.key, t).title}</span>
+            <span className="text-xs text-muted-foreground">{templateCopy(template.key, t).description}</span>
           </button>
         ))}
       </div>
