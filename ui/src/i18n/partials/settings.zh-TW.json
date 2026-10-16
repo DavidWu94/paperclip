@@ -1,0 +1,100 @@
+{
+  "settings": {
+    "breadcrumb": {
+      "settings": "設定",
+      "company": "公司"
+    },
+    "general": {
+      "title": "一般",
+      "organizationName": "組織名稱",
+      "organizationNameHint": "這個組織的顯示名稱。",
+      "renameWarning": "重新命名可能會改變這個公司的任務編號前綴。既有任務編號會重新編號，舊的任務連結將無法再開啟。",
+      "description": "說明",
+      "descriptionHint": "選擇性說明，會顯示在組織資料中。",
+      "descriptionPlaceholder": "選擇性的組織說明"
+    },
+    "language": {
+      "label": "語言",
+      "hint": "會立刻套用在這個瀏覽器。"
+    },
+    "empty": {
+      "noOrganization": "尚未選擇組織。請從上方的切換器選擇一個組織。"
+    },
+    "appearance": {
+      "title": "外觀",
+      "logo": "標誌",
+      "logoHint": "上傳 PNG、JPEG、WEBP、GIF 或 SVG 標誌。",
+      "uploading": "正在上傳標誌...",
+      "removeLogo": "移除標誌",
+      "removing": "正在移除...",
+      "uploadFailed": "標誌上傳失敗",
+      "save": "儲存變更",
+      "saving": "正在儲存...",
+      "saved": "已儲存",
+      "saveFailed": "儲存失敗"
+    },
+    "hiring": {
+      "title": "聘用",
+      "requireApproval": "新聘代理需要董事會核准",
+      "requireApprovalHint": "新代理會先待審，直到董事會核准。"
+    },
+    "danger": {
+      "title": "危險區域",
+      "archiveBody": "封存這個組織後，它會從側邊欄隱藏。資料仍會留在資料庫。",
+      "archiveConfirm": "要封存組織「{{name}}」嗎？它會從側邊欄隱藏。",
+      "archiving": "正在封存...",
+      "alreadyArchived": "已經封存",
+      "archive": "封存組織",
+      "archiveFailed": "封存組織失敗"
+    },
+    "governance": {
+      "saveFailed": "無法儲存互動治理設定"
+    },
+    "instance": {
+      "loading": "正在載入一般設定...",
+      "loadFailed": "無法載入一般設定。",
+      "updateFailed": "無法更新一般設定。",
+      "signOutFailed": "無法登出。",
+      "deploymentTitle": "部署與驗證",
+      "localTrusted": "本機信任模式適合本機操作者。瀏覽器要求會以本機董事會身分執行，不需要登入。",
+      "publicMode": "已驗證的公開模式需要登入才能使用董事會，適合公開網址。",
+      "privateMode": "已驗證的私人模式需要登入，適合區網、VPN 或其他私有網路。",
+      "authReadiness": "驗證就緒狀態",
+      "bootstrapStatus": "啟動狀態",
+      "bootstrapInvite": "啟動邀請",
+      "ready": "就緒",
+      "notReady": "尚未就緒",
+      "setupRequired": "需要設定",
+      "active": "使用中",
+      "none": "無",
+      "censorTitle": "在紀錄中隱藏使用者名稱",
+      "censorBody": "隱藏家目錄路徑和類似操作紀錄裡的使用者名稱。路徑以外單獨出現的使用者名稱，在即時逐字稿裡還不會遮罩。預設關閉。",
+      "censorAria": "切換紀錄中的使用者名稱隱藏",
+      "shortcutsTitle": "鍵盤快捷鍵",
+      "shortcutsBody": "啟用應用程式快捷鍵，包括收件匣導覽，以及建立任務或切換面板等全域快捷鍵。預設關閉。",
+      "shortcutsAria": "切換鍵盤快捷鍵",
+      "backupTitle": "備份保留",
+      "backupBody": "設定自動資料庫備份要保留多久。備份大約每小時執行一次，並以 gzip 壓縮。每日區間內會保留全部備份；超過之後，每週和每月各保留一份。",
+      "daily": "每日",
+      "weekly": "每週",
+      "monthly": "每月",
+      "days": "{{count}} 天",
+      "weekOne": "1 週",
+      "weekOther": "{{count}} 週",
+      "monthOne": "1 個月",
+      "monthOther": "{{count}} 個月",
+      "feedbackTitle": "AI 回饋分享",
+      "feedbackBody": "控制按讚或倒讚時，是否把被投票的 AI 輸出送到 Paperclip Labs。投票紀錄一律存在本機。",
+      "feedbackTerms": "閱讀服務條款",
+      "feedbackPrompt": "尚未儲存預設值。下一次按讚或倒讚會詢問一次，然後把答案存在這裡。",
+      "alwaysAllow": "一律允許",
+      "alwaysAllowHint": "自動分享被投票的 AI 輸出。",
+      "dontAllow": "不允許",
+      "dontAllowHint": "被投票的 AI 輸出只留在本機。",
+      "signOutTitle": "登出",
+      "signOutBody": "登出這個 Paperclip 執行個體。你會被帶到登入頁。",
+      "signingOut": "正在登出...",
+      "signOut": "登出"
+    }
+  }
+}
