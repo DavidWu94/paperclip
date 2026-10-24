@@ -1,0 +1,11 @@
+{
+  "waveFix": {
+    "artifacts": {
+      "readDocument": "Read document",
+      "closeDocument": "Close document",
+      "viewData": "View data",
+      "video": "Video",
+      "image": "Image"
+    }
+  }
+}

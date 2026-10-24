@@ -1,0 +1,11 @@
+{
+  "waveFix": {
+    "artifacts": {
+      "readDocument": "閱讀文件",
+      "closeDocument": "關閉文件",
+      "viewData": "檢視資料",
+      "video": "影片",
+      "image": "圖片"
+    }
+  }
+}

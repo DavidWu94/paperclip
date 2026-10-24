@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
+import { useTranslation } from "@/i18n";
 import {
   ArrowRight,
   CircleCheck,
@@ -376,6 +377,9 @@ export interface DocumentCardProps extends ArtifactIdentity {
   actions?: ReactNode;
 }
 export function DocumentCard(props: DocumentCardProps) {
+  const { t } = useTranslation();
+  const readDocument = t("waveFix.artifacts.readDocument");
+  const closeDocument = t("waveFix.artifacts.closeDocument");
   return (
     <Card>
       {props.body && (
@@ -408,13 +412,13 @@ export function DocumentCard(props: DocumentCardProps) {
                 aria-expanded={props.expanded}
                 onClick={props.onOpen}
               >
-                {props.expanded ? "Close document" : "Read document"}
+                {props.expanded ? closeDocument : readDocument}
               </Button>
             ) : (
               <Viewer
                 title={props.title}
                 description={props.filename}
-                action="Read document"
+                action={readDocument}
               >
                 <Markdown body={props.body} />
               </Viewer>
@@ -469,6 +473,7 @@ function DataTable({ columns, rows }: Pick<DataCardProps, "columns" | "rows">) {
   );
 }
 export function DataCard(props: DataCardProps) {
+  const { t } = useTranslation();
   const csv = [props.columns, ...props.rows]
     .map((row) =>
       row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","),
@@ -499,7 +504,7 @@ export function DataCard(props: DataCardProps) {
             <Viewer
               title={props.title}
               description={props.filename}
-              action="View data"
+              action={t("waveFix.artifacts.viewData")}
             >
               <DataTable {...props} />
               <Button asChild variant="outline" size="sm" className="w-fit">
