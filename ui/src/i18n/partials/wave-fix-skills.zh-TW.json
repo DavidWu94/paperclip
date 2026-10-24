@@ -224,7 +224,8 @@
       "moving": "移動中…",
       "moveHere": "移到這裡",
       "folderName": "資料夾名稱",
-      "add": "新增"
+      "add": "新增",
+      "newOrganizationFolder": "建立組織資料夾"
     }
   }
 }

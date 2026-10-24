@@ -224,7 +224,8 @@
       "moving": "Moving…",
       "moveHere": "Move here",
       "folderName": "Folder name",
-      "add": "Add"
+      "add": "Add",
+      "newOrganizationFolder": "New organization folder"
     }
   }
 }

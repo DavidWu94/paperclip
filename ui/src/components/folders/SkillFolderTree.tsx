@@ -489,6 +489,7 @@ export function SkillFolderRail({
 }
 
 function RailHeading({ label, onCreate }: { label: string; onCreate: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="group/heading flex items-center justify-between px-2 pb-0.5 pt-3">
       <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
@@ -497,7 +498,7 @@ function RailHeading({ label, onCreate }: { label: string; onCreate: () => void 
       <button
         type="button"
         onClick={onCreate}
-        title={`New ${label.toLowerCase()} folder`}
+        title={t("waveFix.skills.newOrganizationFolder")}
         className="opacity-0 transition-opacity group-hover/heading:opacity-100"
       >
         <Plus className="h-3 w-3 text-muted-foreground" />
