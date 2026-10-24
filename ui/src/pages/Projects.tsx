@@ -198,7 +198,7 @@ export function Projects() {
                                 {formatDate(project.targetDate)}
                               </span>
                             )}
-                            <StatusBadge status={project.status} />
+                            <StatusBadge status={project.status} label={t(`waveFix.projects.status.${project.status}`)} />
                             <MembershipAction
                               state={state}
                               pending={joinLeavePending}

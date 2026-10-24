@@ -1,0 +1,19 @@
+{
+  "waveFix": {
+    "projects": {
+      "status": {
+        "backlog": "backlog",
+        "planned": "planned",
+        "in_progress": "in progress",
+        "completed": "completed",
+        "cancelled": "cancelled"
+      },
+      "join": "Join",
+      "leave": "Leave",
+      "joining": "Joining...",
+      "leaving": "Leaving...",
+      "joinAria": "Join {{name}}",
+      "leaveAria": "Leave {{name}}"
+    }
+  }
+}

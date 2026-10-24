@@ -1,0 +1,19 @@
+{
+  "waveFix": {
+    "projects": {
+      "status": {
+        "backlog": "待辦",
+        "planned": "已規劃",
+        "in_progress": "進行中",
+        "completed": "已完成",
+        "cancelled": "已取消"
+      },
+      "join": "加入",
+      "leave": "離開",
+      "joining": "正在加入...",
+      "leaving": "正在離開...",
+      "joinAria": "加入{{name}}",
+      "leaveAria": "離開{{name}}"
+    }
+  }
+}
