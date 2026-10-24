@@ -1,0 +1,8 @@
+{
+  "core": {
+    "agents": {
+      "lastHeartbeat": "Last heartbeat",
+      "noSearchStatusMatch": "No agents match your search and selected status."
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "core": {
+    "agents": {
+      "lastHeartbeat": "上次心跳",
+      "noSearchStatusMatch": "沒有符合搜尋與所選狀態的代理。"
+    }
+  }
+}
