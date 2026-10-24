@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "@/i18n";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ArrowLeft, Layers, Package } from "lucide-react";
 import type { To } from "react-router-dom";
@@ -37,6 +38,7 @@ function parseKind(value: string | null): ArtifactKindFilter {
 }
 
 export function Artifacts() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -217,16 +219,16 @@ export function Artifacts() {
   useEffect(() => {
     if (viewingSelectedStack && selectedGroup) {
       setBreadcrumbs([
-        { label: "Artifacts", href: "/artifacts" },
+        { label: t("work.artifacts.title"), href: "/artifacts" },
         { label: `${selectedGroup.issue.identifier} · ${selectedGroup.title}` },
       ]);
     } else {
-      setBreadcrumbs([{ label: "Artifacts" }]);
+      setBreadcrumbs([{ label: t("work.artifacts.title") }]);
     }
-  }, [setBreadcrumbs, viewingSelectedStack, selectedGroup]);
+  }, [setBreadcrumbs, viewingSelectedStack, selectedGroup, t]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Package} message="Select an organization to view artifacts." />;
+    return <EmptyState icon={Package} message={t("work.artifacts.selectOrg")} />;
   }
 
   const showGroupCards = viewingStackList;
@@ -234,15 +236,15 @@ export function Artifacts() {
 
   const emptyMessage = showGroupCards
     ? searching
-      ? "No artifact stacks match this search."
-      : "No artifact stacks yet."
+      ? t("work.artifacts.emptyStacksSearch")
+      : t("work.artifacts.emptyStacks")
     : searching
-      ? "No artifacts match this search."
+      ? t("work.artifacts.emptySearch")
       : viewingSelectedStack
-        ? "No artifacts in this stack match the current filters."
+        ? t("work.artifacts.emptyStackFilters")
         : kind === "all"
-          ? "No artifacts yet. Outputs attached to issues will appear here."
-          : "No artifacts of this type yet.";
+          ? t("work.artifacts.empty")
+          : t("work.artifacts.emptyKind");
 
   return (
     <div className="w-full max-w-6xl space-y-5">
@@ -264,7 +266,7 @@ export function Artifacts() {
             className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-            All stacks
+            {t("work.artifacts.allStacks")}
           </Link>
           {selectedGroup ? (
             <span className="truncate text-muted-foreground">
@@ -309,7 +311,7 @@ export function Artifacts() {
                 ))}
           </ArtifactTileGrid>
           <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center pb-2 text-xs text-muted-foreground">
-            {isFetchingNextPage ? "Loading more artifacts..." : hasNextPage ? null : isFetching ? "Updating artifacts..." : null}
+            {isFetchingNextPage ? t("work.artifacts.loadingMore") : hasNextPage ? null : isFetching ? t("work.artifacts.updating") : null}
           </div>
         </>
       ) : (
@@ -325,11 +327,11 @@ export function Artifacts() {
           </div>
           <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center pb-2 text-xs text-muted-foreground">
             {isFetchingNextPage
-              ? "Loading more artifacts..."
+              ? t("work.artifacts.loadingMore")
               : hasNextPage
                 ? null
                 : isFetching
-                  ? "Updating artifacts..."
+                  ? t("work.artifacts.updating")
                   : null}
           </div>
         </>
