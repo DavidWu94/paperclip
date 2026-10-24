@@ -1,0 +1,36 @@
+{
+  "waveFix": {
+    "agents": {
+      "roles": {
+        "security": "資安",
+        "engineer": "工程師",
+        "designer": "設計師",
+        "researcher": "研究員"
+      },
+      "agentStatus": {
+        "idle": "閒置",
+        "paused": "已暫停",
+        "running": "執行中",
+        "error": "錯誤",
+        "pendingApproval": "待核准",
+        "terminated": "已終止"
+      },
+      "issueStatus": {
+        "backlog": "待辦",
+        "todo": "待辦事項",
+        "idle": "等待中"
+      },
+      "builtIn": {
+        "needsSetup": "需要設定",
+        "setup": "設定",
+        "needsSetupTitle": "功能執行前需要先設定轉接器與模型",
+        "pendingApprovalTitle": "功能執行前需等待董事會核准聘用"
+      },
+      "relativeTime": {
+        "minutesAgo": "{{count}} 分鐘前",
+        "hoursAgo": "{{count}} 小時前",
+        "daysAgo": "{{count}} 天前"
+      }
+    }
+  }
+}

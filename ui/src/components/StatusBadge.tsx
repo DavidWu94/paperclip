@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "@/i18n";
 import { cn } from "../lib/utils";
 import {
   statusBadge,
@@ -20,6 +22,49 @@ function scStyle(cssVar: string): CSSProperties {
 function sentenceCaseStatus(status: string): string {
   const s = status.replace(/_/g, " ");
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function agentStatusLabel(status: string, translate: TFunction): string {
+  const normalized = status === "active" ? "idle" : status;
+  switch (normalized) {
+    case "idle":
+      return translate("waveFix.agents.agentStatus.idle");
+    case "paused":
+      return translate("waveFix.agents.agentStatus.paused");
+    case "running":
+      return translate("waveFix.agents.agentStatus.running");
+    case "error":
+      return translate("waveFix.agents.agentStatus.error");
+    case "pending_approval":
+      return translate("waveFix.agents.agentStatus.pendingApproval");
+    case "terminated":
+      return translate("waveFix.agents.agentStatus.terminated");
+    default:
+      return normalized.replace(/_/g, " ");
+  }
+}
+
+export function issueStatusLabel(status: string, translate: TFunction): string {
+  switch (status) {
+    case "backlog":
+      return translate("waveFix.agents.issueStatus.backlog");
+    case "todo":
+      return translate("waveFix.agents.issueStatus.todo");
+    case "in_progress":
+      return translate("work.cases.status.in_progress");
+    case "in_review":
+      return translate("work.cases.status.in_review");
+    case "done":
+      return translate("work.cases.status.done");
+    case "blocked":
+      return translate("work.teams.blocked");
+    case "cancelled":
+      return translate("work.cases.status.cancelled");
+    case "idle":
+      return translate("waveFix.agents.issueStatus.idle");
+    default:
+      return sentenceCaseStatus(status);
+  }
 }
 
 /**
@@ -47,14 +92,14 @@ export function StatusBadge({ status, label, className }: { status: string; labe
  * renders as "idle" (alias for dead code).
  */
 export function AgentStatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
   const cssVar = agentStatusVar[status] ?? agentStatusVarDefault;
-  const label = status === "active" ? "idle" : status;
   return (
     <span
       className="status-chip inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium leading-none whitespace-nowrap shrink-0"
       style={scStyle(cssVar)}
     >
-      {label.replace(/_/g, " ")}
+      {agentStatusLabel(status, t)}
     </span>
   );
 }
@@ -85,6 +130,7 @@ export function AgentStatusCapsule({ status }: { status: string }) {
  * unaffected.
  */
 export function IssueStatusBadge({ status: taskStatus, externalConversationState }: { status: string; externalConversationState?: "active" | "waiting" | null }) {
+  const { t } = useTranslation();
   const status = taskStatus === "in_review" && externalConversationState === "waiting" ? "idle" : taskStatus;
   const cssVar = taskStatusVar[status] ?? taskStatusVarDefault;
   return (
@@ -96,7 +142,7 @@ export function IssueStatusBadge({ status: taskStatus, externalConversationState
       style={scStyle(cssVar)}
     >
       <StatusGlyph status={status} size="sm" />
-      {sentenceCaseStatus(status)}
+      {issueStatusLabel(status, t)}
     </span>
   );
 }

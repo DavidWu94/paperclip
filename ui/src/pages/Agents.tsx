@@ -36,6 +36,20 @@ import { agentDisplayAdapterType, getAdapterLabel } from "../adapters/adapter-di
 
 const roleLabels = AGENT_ROLE_LABELS as Record<string, string>;
 
+const translatedRoleLabelKeys: Record<string, string> = {
+  security: "waveFix.agents.roles.security",
+  engineer: "waveFix.agents.roles.engineer",
+  designer: "waveFix.agents.roles.designer",
+  researcher: "waveFix.agents.roles.researcher",
+  general: "shell.settings.general",
+};
+
+function displayRoleLabel(role: string, translate: TFunction): string {
+  const key = translatedRoleLabelKeys[role];
+  if (key) return translate(key);
+  return roleLabels[role] ?? role;
+}
+
 // Lazy-loaded so the roster page doesn't statically pull in the full
 // AgentConfigForm module graph (the modal reuses its adapter/model pickers).
 const ConfigureBuiltInAgentModal = lazy(() =>
@@ -384,7 +398,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
         titleClassName="flex-1"
         titleTextClassName="truncate"
         subtitleClassName="truncate"
-        subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
+        subtitle={`${displayRoleLabel(agent.role, t)}${agent.title ? ` - ${agent.title}` : ""}`}
         to={agentUrl(agent)}
         className="group py-3"
         leading={hasInvalidOrgChain ? (
@@ -531,7 +545,7 @@ function OrgTreeNode({
           <div className="min-w-(--sz-7rem) truncate">
             <span className="text-sm font-medium">{node.name}</span>
             <span className="text-xs text-muted-foreground ml-2">
-              {roleLabels[node.role] ?? node.role}
+              {displayRoleLabel(node.role, t)}
               {agent?.title ? ` - ${agent.title}` : ""}
             </span>
           </div>

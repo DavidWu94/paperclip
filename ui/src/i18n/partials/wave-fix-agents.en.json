@@ -1,0 +1,36 @@
+{
+  "waveFix": {
+    "agents": {
+      "roles": {
+        "security": "Security",
+        "engineer": "Engineer",
+        "designer": "Designer",
+        "researcher": "Researcher"
+      },
+      "agentStatus": {
+        "idle": "idle",
+        "paused": "paused",
+        "running": "running",
+        "error": "error",
+        "pendingApproval": "pending approval",
+        "terminated": "terminated"
+      },
+      "issueStatus": {
+        "backlog": "Backlog",
+        "todo": "Todo",
+        "idle": "Idle"
+      },
+      "builtIn": {
+        "needsSetup": "Needs setup",
+        "setup": "Setup",
+        "needsSetupTitle": "Needs adapter/model setup before the feature can run",
+        "pendingApprovalTitle": "Waiting on board hire approval before the feature can run"
+      },
+      "relativeTime": {
+        "minutesAgo": "{{count}}m ago",
+        "hoursAgo": "{{count}}h ago",
+        "daysAgo": "{{count}}d ago"
+      }
+    }
+  }
+}
