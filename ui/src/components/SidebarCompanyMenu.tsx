@@ -31,6 +31,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "@/i18n";
 import { useCompany } from "@/context/CompanyContext";
 import { useDialogActions } from "@/context/DialogContext";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
@@ -157,6 +158,7 @@ export function SidebarCompanyMenu({ showChevron, ...props }: SidebarCompanyMenu
 }
 
 function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = true }: SidebarCompanyMenuProps) {
+  const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const { companies, selectedCompany, setSelectedCompanyId, companyListUnavailable, retryCompanies } =
@@ -197,7 +199,6 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
     hiddenSettingsLoaded &&
     !hidesCompanyPage(hiddenSettings, "company.members") &&
     !hidesCompanyPage(hiddenSettings, "company.invites");
-  const switcherNoun = "organization";
   const currentName = selectedCompany?.name ?? null;
   // Managed hosts forbid local company creation. Their extension owns that action.
   const companyCreationManaged = Boolean(useCloudInstance());
@@ -272,8 +273,8 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
           className="h-9 min-w-0 flex-1 justify-start gap-2 px-4 text-left hover:bg-sidebar-accent hover:text-sidebar-accent-foreground has-[>svg]:px-4 dark:hover:bg-sidebar-accent dark:hover:text-sidebar-accent-foreground"
           aria-label={
             currentName
-              ? `Open ${currentName} ${switcherNoun} switcher`
-              : `Open ${switcherNoun} switcher`
+              ? t("shell.company.openNamedSwitcher", { name: currentName })
+              : t("shell.company.openSwitcher")
           }
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">
@@ -290,7 +291,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
               )}
               title={currentName ?? undefined}
             >
-              {currentName ?? `Select ${switcherNoun}`}
+              {currentName ?? t("shell.company.select")}
             </TruncatedText>
           </span>
           {!rail && showChevron && <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />}
@@ -303,7 +304,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
       >
         <FlyoutHeader className="flex h-(--organization-popover-header-height) items-center justify-between gap-2 px-3.5">
           <DropdownMenuLabel className="p-0 text-(length:--text-compact) font-semibold text-foreground">
-            Organizations
+            {t("shell.company.organizations")}
           </DropdownMenuLabel>
           <button
             type="button"
@@ -314,7 +315,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
             }}
             className="rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            {isEditingOrder ? "Done" : "Edit"}
+            {isEditingOrder ? t("shell.company.done") : t("shell.company.edit")}
           </button>
         </FlyoutHeader>
         <FlyoutOptions className="flex max-h-96 flex-col gap-0.5 overflow-y-auto px-2.5 pb-2 pt-1">
@@ -345,7 +346,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
             // offer the way back.
             companyListUnavailable ? (
               <>
-                <DropdownMenuItem disabled>Couldn&apos;t load organizations</DropdownMenuItem>
+                <DropdownMenuItem disabled>{t("shell.company.loadFailedApostrophe")}</DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={(event) => {
                     // Keep the menu open so the result of the retry is visible.
@@ -354,11 +355,11 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
                   }}
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Try again
+                  {t("shell.company.tryAgain")}
                 </DropdownMenuItem>
               </>
             ) : (
-              <DropdownMenuItem disabled>No organizations</DropdownMenuItem>
+              <DropdownMenuItem disabled>{t("shell.company.empty")}</DropdownMenuItem>
             )
           ) : null}
         </FlyoutOptions>
@@ -372,7 +373,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
               <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
                 <Plus className="size-4" />
               </span>
-              <TruncatedText className="min-w-0 flex-1 truncate">Create organization</TruncatedText>
+              <TruncatedText className="min-w-0 flex-1 truncate">{t("shell.company.create")}</TruncatedText>
             </DropdownMenuItem>
           )}
           {showInvitePeople ? (
@@ -391,7 +392,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
                   <UserPlus className="size-4" />
                 </span>
                 <TruncatedText className="min-w-0 flex-1 truncate">
-                  {currentName ? `Invite people to ${currentName}` : "Invite people"}
+                  {currentName ? t("shell.company.inviteTo", { name: currentName }) : t("shell.company.invite")}
                 </TruncatedText>
               </Link>
             </DropdownMenuItem>
@@ -406,7 +407,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
                 <LogOut className="size-4" />
               </span>
               <TruncatedText className="min-w-0 flex-1 truncate">
-                {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+                {signOutMutation.isPending ? t("shell.common.signingOut") : t("shell.common.signOut")}
               </TruncatedText>
             </DropdownMenuItem>
           ) : null}
