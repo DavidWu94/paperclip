@@ -354,5 +354,50 @@
       "allowTool": "Allow tool {{id}}",
       "blockTool": "Block tool {{id}}"
     }
+  },
+  "skills": {
+    "authored": {
+      "title": "My Skills",
+      "description": "Skills you can open, edit and test in Studio.",
+      "search": "Search my skills",
+      "empty": "No skills yet. Create a skill to start working in Studio.",
+      "openFailed": "Couldn't open My Skills",
+      "openFailedBody": "Failed to create your personal folder."
+    },
+    "empty": {
+      "view": "No skills in this view yet."
+    },
+    "breadcrumb": {
+      "new": "New skill",
+      "detail": "Detail"
+    },
+    "search": {
+      "installed": "Search installed skills",
+      "discover": "Search discoverable skills"
+    },
+    "toolbar": {
+      "controls": "Skills controls",
+      "sort": "Sort",
+      "mostAgents": "Most agents",
+      "mostStars": "Most stars",
+      "mostForks": "Most forks",
+      "recent": "Recently updated",
+      "alphabetical": "Alphabetical",
+      "source": "Source",
+      "all": "All",
+      "allSkills": "All skills",
+      "allSources": "All sources",
+      "scan": "Scan project workspaces for skills",
+      "newFolder": "New folder",
+      "select": "Select",
+      "done": "Done",
+      "new": "New",
+      "createNew": "Create new skill",
+      "discover": "Discover skills",
+      "importGithub": "Import from GitHub",
+      "manageSources": "Manage sources",
+      "importPath": "Import from path or URL",
+      "importProject": "Import skills from project"
+    }
   }
 }

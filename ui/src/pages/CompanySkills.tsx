@@ -31,6 +31,7 @@ import type {
 import { companySkillsApi } from "../api/companySkills";
 import { foldersApi } from "../api/folders";
 import { agentsApi } from "../api/agents";
+import { useTranslation } from "@/i18n";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs, type Breadcrumb } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
@@ -1128,15 +1129,16 @@ export function DiscoveryGrid({
   /** Category/folder navigation stays available in production, but the Streamlined UI relies on search and scrolling. */
   showBrowseRails?: boolean;
 }) {
+  const { t } = useTranslation();
   const installedView = tab === "installed";
   const authoredView = collectionView === "authored";
-  const viewTitle = authoredView ? "My Skills" : installedView ? "Installed skills" : "Discover skills";
+  const viewTitle = authoredView ? t("skills.authored.title") : installedView ? t("skills.installed.title") : t("skills.discover.title");
   const viewDescription = authoredView
-    ? "Skills you can open, edit and test in Studio."
+    ? t("skills.authored.description")
     : installedView
-    ? "Skills available to this organization."
-    : "Browse skills from every available source.";
-  const searchLabel = authoredView ? "Search my skills" : installedView ? "Search installed skills" : "Search discoverable skills";
+    ? t("skills.installed.description")
+    : t("skills.discover.description");
+  const searchLabel = authoredView ? t("skills.authored.search") : installedView ? t("skills.search.installed") : t("skills.search.discover");
   // Source filter (github / skills.sh / local / …) lives in the grid so it
   // narrows whatever the parent already filtered by tab/category/search (PAP-10907 E).
   const [sourceBadgeFilter, setSourceBadgeFilter] = useState<string>("all");
@@ -1242,7 +1244,7 @@ export function DiscoveryGrid({
           selectMode={selectMode} onToggleSelectMode={onToggleSelectMode}
           folderControl={showBrowseRails && folderResult && onFolderSelect ? (
             <div className="w-full md:hidden">
-              <FolderChip result={folderResult} selection={folderSelection} allLabel="All skills" onClick={onOpenMobileFolders ?? (() => undefined)} />
+              <FolderChip result={folderResult} selection={folderSelection} allLabel={t("skills.toolbar.allSkills")} onClick={onOpenMobileFolders ?? (() => undefined)} />
             </div>
           ) : undefined}
         />
@@ -1325,23 +1327,23 @@ export function DiscoveryGrid({
                 message={
                   totalCount === 0
                     ? installedView
-                      ? authoredView ? "No skills yet. Create a skill to start working in Studio." : "No installed skills yet. Discover a skill or create one."
-                      : "No skills are available to discover yet."
+                      ? authoredView ? t("skills.authored.empty") : t("skills.empty.installed")
+                      : t("skills.empty.discover")
                     : search || activeCategory || sourceFilterActive
-                      ? "No skills match your filters."
-                      : "No skills in this view yet."
+                      ? t("skills.empty.noMatch")
+                      : t("skills.empty.view")
                 }
               />
               {totalCount === 0 ? (
                 <div className="mt-3 flex flex-col items-center gap-2">
                   {installedView ? (
                     <Button size="sm" onClick={onBrowseDiscover}>
-                      <Compass className="mr-1.5 h-3.5 w-3.5" /> Discover skills
+                      <Compass className="mr-1.5 h-3.5 w-3.5" /> {t("skills.toolbar.discover")}
                     </Button>
                   ) : null}
-                  <Button size="sm" variant="outline" asChild><Link to="/skills/sources/new">Import from GitHub</Link></Button>
+                  <Button size="sm" variant="outline" asChild><Link to="/skills/sources/new">{t("skills.toolbar.importGithub")}</Link></Button>
                   <Button size="sm" variant="ghost" onClick={onCreate}>
-                    Create a skill
+                    {t("skills.actions.createSkill")}
                   </Button>
                 </div>
               ) : (search || activeCategory || sourceFilterActive) ? (
@@ -3928,6 +3930,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
+  const { t } = useTranslation();
   const adapterCaps = useAdapterCapabilities();
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const policyDenial = useSkillPolicyDenial();
@@ -4272,16 +4275,16 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
   const activeDetail = detailQuery.data ?? displayedDetail;
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Skills", href: "/skills" },
-      ...(collectionView === "authored" ? [{ label: "My Skills" }] : isStudioNew
-        ? [{ label: studioForkFromId ? "Fork skill" : "New skill" }]
+      { label: t("shell.sidebar.skills"), href: "/skills" },
+      ...(collectionView === "authored" ? [{ label: t("shell.skillsNav.mySkills") }] : isStudioNew
+        ? [{ label: studioForkFromId ? t("skills.fork.title") : t("skills.breadcrumb.new") }]
         : activeDetail
           ? skillDetailBreadcrumbs(activeDetail, skillFoldersQuery.data).slice(1)
           : routeSkillToken
-            ? [{ label: "Detail" }]
+            ? [{ label: t("skills.breadcrumb.detail") }]
             : []),
     ]);
-  }, [activeDetail, collectionView, isStudioNew, routeSkillToken, setBreadcrumbs, skillFoldersQuery.data, studioForkFromId]);
+  }, [activeDetail, collectionView, isStudioNew, routeSkillToken, setBreadcrumbs, skillFoldersQuery.data, studioForkFromId, t]);
   const activeFile = fileQuery.data ?? displayedFile;
 
   function routeForSkill(skill: CompanySkillRouteSubject, path?: string | null) {
@@ -4816,8 +4819,8 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: "Couldn't open My Skills",
-        body: error instanceof Error ? error.message : "Failed to create your personal folder.",
+        title: t("skills.authored.openFailed"),
+        body: error instanceof Error ? error.message : t("skills.authored.openFailedBody"),
       });
     },
   });

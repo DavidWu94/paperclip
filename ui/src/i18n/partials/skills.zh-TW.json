@@ -354,5 +354,50 @@
       "allowTool": "允許工具 {{id}}",
       "blockTool": "封鎖工具 {{id}}"
     }
+  },
+  "skills": {
+    "authored": {
+      "title": "我的技能",
+      "description": "你可以在 Studio 開啟、編輯並測試的技能。",
+      "search": "搜尋我的技能",
+      "empty": "還沒有技能。建立一個技能，就能在 Studio 開始工作。",
+      "openFailed": "無法開啟我的技能",
+      "openFailedBody": "無法建立你的個人資料夾。"
+    },
+    "empty": {
+      "view": "這個檢視還沒有技能。"
+    },
+    "breadcrumb": {
+      "new": "新技能",
+      "detail": "詳細資料"
+    },
+    "search": {
+      "installed": "搜尋已安裝的技能",
+      "discover": "搜尋可探索的技能"
+    },
+    "toolbar": {
+      "controls": "技能操作",
+      "sort": "排序",
+      "mostAgents": "最多代理",
+      "mostStars": "最多星標",
+      "mostForks": "最多分叉",
+      "recent": "最近更新",
+      "alphabetical": "字母順序",
+      "source": "來源",
+      "all": "全部",
+      "allSkills": "所有技能",
+      "allSources": "所有來源",
+      "scan": "掃描專案工作區裡的技能",
+      "newFolder": "新資料夾",
+      "select": "選取",
+      "done": "完成",
+      "new": "新增",
+      "createNew": "建立新技能",
+      "discover": "探索技能",
+      "importGithub": "從 GitHub 匯入",
+      "manageSources": "管理來源",
+      "importPath": "從路徑或網址匯入",
+      "importProject": "從專案匯入技能"
+    }
   }
 }
