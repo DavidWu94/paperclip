@@ -1,0 +1,48 @@
+{
+  "waveFix": {
+    "costsHistory": {
+      "loadingDecisions": "正在載入決策請求…",
+      "loadingFastResponses": "正在載入快速回應…",
+      "loadFailedDecisions": "無法載入決策請求。",
+      "loadFailedFastResponses": "無法載入快速回應。",
+      "tryAgain": "再試一次",
+      "emptyFastResponses": "這段期間沒有快速回應。",
+      "emptyDecisions": "這段期間沒有決策請求。",
+      "configureFastResponse": "設定快速回應",
+      "enableExperimentalFastResponses": "啟用實驗性快速回應",
+      "configureDecisionModel": "設定決策模型",
+      "toRunATest": "以執行測試。",
+      "recentRequests": "最近的請求。輸入內容不會保留。",
+      "ariaFastResponses": "快速回應",
+      "ariaDecisions": "決策請求",
+      "headers": {
+        "whenFeature": "時間 / 功能",
+        "responsible": "負責人",
+        "task": "任務",
+        "connection": "連線",
+        "model": "模型",
+        "status": "狀態",
+        "duration": "時間長度",
+        "tokensInOut": "輸入 / 輸出 token",
+        "cost": "成本"
+      },
+      "setupTest": "設定測試",
+      "paperclipServices": "Paperclip 服務",
+      "board": "董事會",
+      "formerUser": "先前的使用者",
+      "viewTask": "檢視任務",
+      "removedConnection": "已移除的連線",
+      "status": {
+        "succeeded": "成功",
+        "running": "執行中",
+        "unresolved": "未解決",
+        "skipped": "已略過",
+        "pending": "待處理",
+        "failed": "失敗"
+      },
+      "estimated": "估計",
+      "reported": "已回報",
+      "unknown": "未知"
+    }
+  }
+}

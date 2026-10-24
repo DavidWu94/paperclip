@@ -1,0 +1,48 @@
+{
+  "waveFix": {
+    "costsHistory": {
+      "loadingDecisions": "Loading decision requests…",
+      "loadingFastResponses": "Loading fast responses…",
+      "loadFailedDecisions": "Could not load decision requests.",
+      "loadFailedFastResponses": "Could not load fast responses.",
+      "tryAgain": "Try again",
+      "emptyFastResponses": "No fast responses in this period.",
+      "emptyDecisions": "No decision requests in this period.",
+      "configureFastResponse": "Configure fast response",
+      "enableExperimentalFastResponses": "Enable experimental fast responses",
+      "configureDecisionModel": "Configure a decision model",
+      "toRunATest": "to run a test.",
+      "recentRequests": "Recent requests. Inputs are not retained.",
+      "ariaFastResponses": "Fast responses",
+      "ariaDecisions": "Decision requests",
+      "headers": {
+        "whenFeature": "When / feature",
+        "responsible": "Responsible",
+        "task": "Task",
+        "connection": "Connection",
+        "model": "Model",
+        "status": "Status",
+        "duration": "Duration",
+        "tokensInOut": "Tokens in / out",
+        "cost": "Cost"
+      },
+      "setupTest": "Setup test",
+      "paperclipServices": "Paperclip services",
+      "board": "Board",
+      "formerUser": "Former user",
+      "viewTask": "View task",
+      "removedConnection": "Removed connection",
+      "status": {
+        "succeeded": "Succeeded",
+        "running": "Running",
+        "unresolved": "Unresolved",
+        "skipped": "Skipped",
+        "pending": "Pending",
+        "failed": "Failed"
+      },
+      "estimated": "Estimated",
+      "reported": "Reported",
+      "unknown": "Unknown"
+    }
+  }
+}
