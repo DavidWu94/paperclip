@@ -147,6 +147,7 @@ function StreamlinedTasks() {
     return (
       <Inbox
         tab={definition.inboxTab}
+        surface="tasks"
         surfaceLabel={t("shell.sidebar.tasks")}
         toolbarContext={(
           <div className="flex min-w-0 items-center gap-2">

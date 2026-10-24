@@ -1,0 +1,46 @@
+{
+  "waveFix": {
+    "tasks": {
+      "searchPlaceholder": "搜尋任務…",
+      "listSearchPlaceholder": "搜尋任務…",
+      "searchLabel": "搜尋任務",
+      "emptyOrganization": "請先選擇組織，再檢視任務。",
+      "controls": "任務操作",
+      "listView": "列表檢視",
+      "boardView": "看板檢視",
+      "backlog": "待辦",
+      "todo": "待辦事項",
+      "createTask": "建立任務",
+      "emptyFilters": "沒有任務符合目前的篩選或搜尋。",
+      "noActiveSubTasks": "沒有進行中的子任務",
+      "allSubTasksDone": "子任務都已完成",
+      "noActionableSubTasks": "沒有可處理的子任務",
+      "inbox": {
+        "searchPlaceholder": "搜尋收件匣…",
+        "emptyOrganization": "請先選擇組織，再檢視收件匣。",
+        "controls": "收件匣操作"
+      },
+      "views": {
+        "mine": "我的",
+        "unread": "未讀",
+        "blocked": "受阻",
+        "everything": "全部",
+        "allTasks": "所有任務",
+        "active": "進行中",
+        "changeView": "變更檢視 — 目前是{{view}}",
+        "hints": {
+          "mine": "指派給你，或正在等你",
+          "unread": "你碰過、且有新活動的任務",
+          "blocked": "受阻的任務，依阻擋原因分組",
+          "recent": "你最近碰過的內容",
+          "everything": "任務、核准、失敗的執行與加入要求",
+          "all": "組織裡的每個任務",
+          "active": "未完成的任務，無論是否正在執行",
+          "backlog": "尚未開始",
+          "done": "已完成與已取消"
+        }
+      },
+      "newInGroup": "在{{group}}中建立新任務"
+    }
+  }
+}

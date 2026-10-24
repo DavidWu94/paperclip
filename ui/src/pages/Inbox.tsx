@@ -1,4 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "@/i18n";
 import { Link, useLocation, useNavigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { deriveOriginatingActor, INBOX_MINE_ISSUE_STATUS_FILTER, isHeartbeatRunVisibleInMine } from "@paperclipai/shared";
@@ -822,8 +823,10 @@ export interface InboxSurfaceProps {
   tab?: InboxTab;
   /** Replaces the inbox tab bar in the toolbar's context slot. */
   toolbarContext?: ReactNode;
-  /** Breadcrumb and back-link label; "Inbox" when standalone, "Tasks" when hosted. */
+  /** Breadcrumb and back-link noun. Search, empty, and controls copy do not interpolate this. */
   surfaceLabel?: string;
+  /** Picks a full-sentence catalog. Tasks and inbox do not share one template. */
+  surface?: "inbox" | "tasks";
 }
 
 export function Inbox(props: InboxSurfaceProps = {}) {
@@ -834,8 +837,17 @@ export function Inbox(props: InboxSurfaceProps = {}) {
 function StreamlinedInbox({
   tab: tabOverride,
   toolbarContext,
-  surfaceLabel = "Inbox",
+  surfaceLabel,
+  surface = "inbox",
 }: InboxSurfaceProps) {
+  const { t } = useTranslation();
+  const taskSurface = surface === "tasks";
+  const resolvedSurfaceLabel = surfaceLabel
+    ?? t(taskSurface ? "shell.sidebar.tasks" : "shell.sidebar.inbox");
+  const searchPlaceholder = t(taskSurface ? "waveFix.tasks.searchPlaceholder" : "waveFix.tasks.inbox.searchPlaceholder");
+  const controlsLabel = t(taskSurface ? "waveFix.tasks.controls" : "waveFix.tasks.inbox.controls");
+  const emptyOrganization = t(taskSurface ? "waveFix.tasks.emptyOrganization" : "waveFix.tasks.inbox.emptyOrganization");
+  const searchAriaLabel = taskSurface ? t("waveFix.tasks.searchLabel") : undefined;
   const streamlinedUiEnabled = true;
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -882,11 +894,11 @@ function StreamlinedInbox({
   const issueLinkState = useMemo(
     () =>
       createIssueDetailLocationState(
-        surfaceLabel,
+        resolvedSurfaceLabel,
         `${location.pathname}${location.search}${location.hash}`,
         "inbox",
       ),
-    [surfaceLabel, location.pathname, location.search, location.hash],
+    [resolvedSurfaceLabel, location.pathname, location.search, location.hash],
   );
 
   const { data: session } = useQuery({
@@ -921,8 +933,8 @@ function StreamlinedInbox({
   });
 
   useEffect(() => {
-    setBreadcrumbs([{ label: surfaceLabel }]);
-  }, [setBreadcrumbs, surfaceLabel]);
+    setBreadcrumbs([{ label: resolvedSurfaceLabel }]);
+  }, [setBreadcrumbs, resolvedSurfaceLabel]);
 
   useEffect(() => {
     saveLastInboxTab(tab);
@@ -2391,7 +2403,7 @@ function StreamlinedInbox({
   }, [selectedIndex]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={InboxIcon} message={`Select an organization to view ${surfaceLabel.toLowerCase()}.`} />;
+    return <EmptyState icon={InboxIcon} message={emptyOrganization} />;
   }
 
   const hasRunFailures = failedRuns.length > 0;
@@ -2460,16 +2472,16 @@ function StreamlinedInbox({
     <div className="space-y-6">
       <InboxCollectionToolbar
         streamlined={streamlinedUiEnabled}
-        ariaLabel={`${surfaceLabel} controls`}
+        ariaLabel={controlsLabel}
         context={toolbarContext ?? (
           <Tabs value={tab} onValueChange={(value) => navigate(`/inbox/${value}`)}>
             <PageTabBar
               items={[
-                { value: "mine", label: "Mine" },
-                { value: "recent", label: "Recent" },
-                { value: "unread", label: "Unread" },
-                { value: "blocked", label: "Blocked" },
-                { value: "all", label: "All" },
+                { value: "mine", label: t("waveFix.tasks.views.mine") },
+                { value: "recent", label: t("shell.sort.recent") },
+                { value: "unread", label: t("waveFix.tasks.views.unread") },
+                { value: "blocked", label: t("waveFix.tasks.views.blocked") },
+                { value: "all", label: t("work.common.all") },
               ]}
             />
           </Tabs>
@@ -2479,7 +2491,8 @@ function StreamlinedInbox({
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder={`Search ${surfaceLabel.toLowerCase()}…`}
+              placeholder={searchPlaceholder}
+              aria-label={searchAriaLabel}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {

@@ -1,0 +1,46 @@
+{
+  "waveFix": {
+    "tasks": {
+      "searchPlaceholder": "Search tasks…",
+      "listSearchPlaceholder": "Search tasks...",
+      "searchLabel": "Search tasks",
+      "emptyOrganization": "Select an organization to view tasks.",
+      "controls": "Tasks controls",
+      "listView": "List view",
+      "boardView": "Board view",
+      "backlog": "Backlog",
+      "todo": "Todo",
+      "createTask": "Create Task",
+      "emptyFilters": "No tasks match the current filters or search.",
+      "noActiveSubTasks": "No active sub-tasks",
+      "allSubTasksDone": "All sub-tasks done",
+      "noActionableSubTasks": "No actionable sub-tasks",
+      "inbox": {
+        "searchPlaceholder": "Search inbox…",
+        "emptyOrganization": "Select an organization to view inbox.",
+        "controls": "Inbox controls"
+      },
+      "views": {
+        "mine": "Mine",
+        "unread": "Unread",
+        "blocked": "Blocked",
+        "everything": "Everything",
+        "allTasks": "All tasks",
+        "active": "Active",
+        "changeView": "Change view — currently {{view}}",
+        "hints": {
+          "mine": "Assigned to you or waiting on you",
+          "unread": "Tasks you touched with new activity",
+          "blocked": "Blocked tasks, grouped by blocker",
+          "recent": "Everything you touched lately",
+          "everything": "Tasks, approvals, failed runs and join requests",
+          "all": "Every task in the organization",
+          "active": "Open tasks, running or not",
+          "backlog": "Not started yet",
+          "done": "Completed and cancelled"
+        }
+      },
+      "newInGroup": "New task in {{group}}"
+    }
+  }
+}
