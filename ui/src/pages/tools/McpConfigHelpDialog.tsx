@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Check, Copy, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
+import { AgentSetupPrompt } from "@/components/AgentSetupPrompt";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { copyTextToClipboard } from "@/lib/clipboard";
 import { MCP_CONFIG_HELP_INSTRUCTIONS, MCP_CONFIG_HELP_PROMPT } from "@paperclipai/shared";
 import { i18n, useTranslation } from "@/i18n";
 import skillsExtraEn from "@/i18n/partials/skills.en.json";
@@ -18,8 +17,6 @@ import skillsExtraZhTW from "@/i18n/partials/skills.zh-TW.json";
 
 i18n.addResourceBundle("en", "translation", skillsExtraEn, true, false);
 i18n.addResourceBundle("zh-TW", "translation", skillsExtraZhTW, true, false);
-
-const COPIED_RESET_MS = 2_000;
 
 /**
  * Compact question-mark help beside the Paste-a-config copy (PAP-17087, plan 3A).
@@ -31,33 +28,9 @@ const COPIED_RESET_MS = 2_000;
  */
 export function McpConfigHelpDialog() {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
-  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => () => {
-    if (resetTimer.current) clearTimeout(resetTimer.current);
-  }, []);
-
-  // Reset the copy affordance each time the dialog opens, so a stale "Copied"
-  // from a previous visit never reads as confirmation of this one.
-  useEffect(() => {
-    if (open) setCopyState("idle");
-  }, [open]);
-
-  const copyPrompt = async () => {
-    try {
-      await copyTextToClipboard(MCP_CONFIG_HELP_PROMPT);
-      setCopyState("copied");
-    } catch {
-      setCopyState("failed");
-    }
-    if (resetTimer.current) clearTimeout(resetTimer.current);
-    resetTimer.current = setTimeout(() => setCopyState("idle"), COPIED_RESET_MS);
-  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog>
       <DialogTrigger asChild>
         <Button
           type="button"
@@ -98,20 +71,13 @@ export function McpConfigHelpDialog() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Button type="button" onClick={() => void copyPrompt()}>
-            {copyState === "copied" ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
-            {t("skillsExtra.tools.copyPrompt")}
-          </Button>
-          {/* aria-live so a screen reader hears the outcome without moving focus
-              off the button the operator just pressed. */}
-          <span aria-live="polite" className="text-xs text-muted-foreground">
-            {copyState === "copied"
-              ? t("skillsExtra.tools.copied")
-              : copyState === "failed"
-                ? t("skillsExtra.tools.copyFailed")
-                : null}
-          </span>
+        <div>
+          <AgentSetupPrompt
+            prompt={MCP_CONFIG_HELP_PROMPT}
+            label={t("skillsExtra.tools.agentConfigLabel")}
+            title={t("skillsExtra.tools.agentConfigTitle")}
+            description={t("skillsExtra.tools.agentConfigDescription")}
+          />
         </div>
       </DialogContent>
     </Dialog>

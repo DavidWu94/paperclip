@@ -40,6 +40,9 @@
       "timeline": "時間軸",
       "costs": "成本",
       "activity": "活動",
+      "commentary": "評論",
+      "chat": "對話",
+      "myWork": "我的工作",
       "settings": "設定"
     },
     "nav": {
@@ -106,6 +109,7 @@
       "signedIn": "已登入",
       "localBoard": "本機工作區董事會",
       "openMenu": "開啟帳戶選單",
+      "invite": "邀請",
       "viewProfile": "檢視個人檔案",
       "editProfile": "編輯個人檔案",
       "documentation": "說明文件",

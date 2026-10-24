@@ -14,9 +14,9 @@ import {
   Sparkles,
   Wrench,
 } from "lucide-react";
+import { usePluginSlots } from "@/plugins/slots";
 import { agentsApi } from "@/api/agents";
 import { useCompany } from "@/context/CompanyContext";
-import { useChatConnectorsEnabled } from "@/hooks/useChatConnectorsEnabled";
 import { queryKeys } from "@/lib/queryKeys";
 import { ContextualSidebarFrame } from "./ContextualSidebarFrame";
 import { SidebarNavItem } from "./SidebarNavItem";
@@ -62,7 +62,6 @@ export function AgentContextualSidebar({
 }) {
   const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
-  const { enabled: chatConnectorsEnabled } = useChatConnectorsEnabled();
   const shouldResolveAgent = !agentId || !agentName;
   const { data: resolvedAgent } = useQuery({
     queryKey: [...queryKeys.agents.detail(agentRef), selectedCompanyId ?? null, "contextual-sidebar"],
@@ -70,6 +69,7 @@ export function AgentContextualSidebar({
     enabled: shouldResolveAgent && Boolean(agentRef && selectedCompanyId),
   });
   const resolvedId = agentId ?? resolvedAgent?.id;
+  const { slots: pluginTabs } = usePluginSlots({ slotTypes: ["detailTab"], entityType: "agent", companyId: resolvedAgent?.companyId ?? selectedCompanyId, enabled: Boolean(resolvedId) });
   const resolvedName = agentName ?? resolvedAgent?.name ?? t("shell.agent.fallbackName");
   const resolvedLabels = labels ?? { secrets: t("shell.agent.items.secretsAndVariables") };
   const sectionLabels: Record<string, string> = {
@@ -123,7 +123,6 @@ export function AgentContextualSidebar({
             </p>
             <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
               {section.items
-                .filter((item) => item.value !== "channels" || chatConnectorsEnabled)
                 .map((item) => {
                   const href = agentDetailHref(agentRef, item.value);
                   return (
@@ -139,6 +138,12 @@ export function AgentContextualSidebar({
           </div>
         ))}
 
+        {pluginTabs.length > 0 && <div data-slot="contextual-sidebar-section" className={contextualSidebarStyles.section}>
+          <p className={contextualSidebarStyles.sectionLabel}>Apps</p>
+          <div className={contextualSidebarStyles.group}>
+            {pluginTabs.map(slot => <SidebarNavItem key={`${slot.pluginKey}:${slot.id}`} to={`/agents/${encodeURIComponent(agentRef)}/${encodeURIComponent(`plugin:${slot.pluginKey}:${slot.id}`)}`} label={slot.displayName} icon={Wrench} />)}
+          </div>
+        </div>}
         <div data-slot="contextual-sidebar-section" className={contextualSidebarStyles.section}>
           <p
             data-slot="contextual-sidebar-section-label"

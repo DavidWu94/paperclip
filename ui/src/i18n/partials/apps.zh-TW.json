@@ -330,6 +330,7 @@
       "actionAvailable": "可用 {{count}} 個動作",
       "actionsAvailable": "可用 {{count}} 個動作",
       "appName": "應用名稱",
+      "chooseRepository": "選擇一個儲存庫來匯入技能。",
       "connectedBody": "連線已就緒。請在下方審查權限或測試動作。",
       "connectedTitle": "{{app}} 已連線",
       "githubCheckFailed": "無法檢查 GitHub 存取。請再試一次。",

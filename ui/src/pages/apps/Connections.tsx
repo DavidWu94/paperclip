@@ -1,3 +1,4 @@
+import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@paperclipai/shared";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppWindow, Cloud, Loader2, ShieldAlert, ShieldCheck, ShieldQuestion, Trash2 } from "lucide-react";
@@ -35,8 +36,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/timeAgo";
 import { AppLogo } from "./AppLogo";
-import { ConnectionProvenanceChip } from "./ComposioProvenanceChip";
-import { composioChildParentConnectionId } from "./composio-services";
+import { ConnectionProvenanceChip } from "./ConnectionProvenanceChip";
 import {
   appApplicationSourceSlug,
   appDefinitionDarkLogoUrl,
@@ -83,7 +83,7 @@ type AppRow = {
  * pill's `attention` tone and the row highlight are now the *same* predicate.
  */
 function statusFor(application: ToolApplication, connections: ToolConnection[]): AppStatus {
-  ensureAppsMessages();
+  if (connections.some(isRetiredComposioConnection)) return { label: "Retired", tone: "attention" };
   if (connections.length === 0) {
     return { label: i18n.t("apps.common.notConnected"), tone: "not_connected" };
   }
@@ -126,7 +126,7 @@ export function Connections() {
     id: string;
     appName: string;
     remainingConnectionCount: number;
-    childConnectionCount: number;
+
   } | null>(null);
 
   useEffect(() => {
@@ -183,11 +183,9 @@ export function Connections() {
       id: string;
       appName: string;
       remainingConnectionCount: number;
-      childConnectionCount: number;
+
     }) =>
-      toolsApi.archiveConnection(target.id, {
-        confirmComposioChildren: target.childConnectionCount > 0,
-      }),
+      toolsApi.archiveConnection(target.id),
     onSuccess: (_connection, target) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.applications(selectedCompanyId!) });
@@ -279,7 +277,7 @@ export function Connections() {
       return appConnections.map((connection) => {
         const owner = connectionOwnerProfile(connection, userProfileById);
         const type = connectionTypeLabel(connection.credentialPolicy);
-        const displayName = type === "Company"
+        const displayName = type === "Organization"
           ? connectionNameForCredentialPolicy(
               humanizeConnectionDisplayName(connection),
               connection.credentialPolicy,
@@ -422,6 +420,7 @@ export function Connections() {
                   const { application, connection, status } = row;
                   const attention = rowNeedsAttention(row);
                   const hint =
+                    connection && isRetiredComposioConnection(connection) ? RETIRED_COMPOSIO_MESSAGE :
                     status.tone === "attention"
                       ? connection?.authKind === "oauth"
                         ? t("apps.connections.reconnectRequired")
@@ -438,6 +437,7 @@ export function Connections() {
                     : `/apps/app/${application.id}/permissions`;
                   const actionLabel = !connection
                     ? t("apps.common.connect")
+                    : connection && isRetiredComposioConnection(connection) ? t("apps.common.review")
                     : status.tone === "attention"
                       ? t("apps.common.reconnect")
                       : t("apps.common.permissions");
@@ -520,9 +520,7 @@ export function Connections() {
                                   id: connection.id,
                                   appName: application.name,
                                   remainingConnectionCount: row.remainingAgentAvailableConnectionCount,
-                                  childConnectionCount: connections.filter(
-                                    (candidate) => composioChildParentConnectionId(candidate) === connection.id,
-                                  ).length,
+
                                 });
                               }}
                             >
@@ -558,16 +556,13 @@ export function Connections() {
               {t("apps.connections.deleteTitle", { name: connectionToDelete?.appName ?? t("apps.connections.this") })}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {connectionToDelete && connectionToDelete.childConnectionCount > 0
-                ? t("apps.connections.deleteWithServices", {
-                    count: connectionToDelete.childConnectionCount,
-                    unit: connectionToDelete.childConnectionCount === 1 ? t("apps.connections.serviceOne") : t("apps.connections.serviceMany"),
-                  })
-                : connectionToDelete && connectionToDelete.remainingConnectionCount > 0
+              {connectionToDelete && connectionToDelete.remainingConnectionCount > 0
                 ? t("apps.connections.deleteWithOthers", {
                     app: connectionToDelete.appName,
                     count: connectionToDelete.remainingConnectionCount,
-                    unit: connectionToDelete.remainingConnectionCount === 1 ? t("apps.connections.connectionOne") : t("apps.connections.connectionMany"),
+                    unit: connectionToDelete.remainingConnectionCount === 1
+                      ? t("apps.connections.connectionOne")
+                      : t("apps.connections.connectionMany"),
                   })
                 : t("apps.connections.deleteBody")}
             </AlertDialogDescription>

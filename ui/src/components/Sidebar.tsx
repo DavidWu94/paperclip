@@ -18,6 +18,7 @@ import {
   FolderOpen,
   Unplug,
   MessagesSquare,
+  MessageCircle,
   GanttChartSquare,
   LayoutGrid,
   Users,
@@ -29,7 +30,6 @@ import { SidebarNavItem } from "./SidebarNavItem";
 import { SidebarAgents } from "./SidebarAgents";
 import { SidebarProjects } from "./SidebarProjects";
 import { SidebarStarredProjects } from "./SidebarStarredProjects";
-import { SidebarAgentChats } from "./SidebarAgentChats";
 import { useAgentChatEnabled } from "@/hooks/useAgentChatEnabled";
 import { SidebarRecentTasks } from "./SidebarRecentTasks";
 import { useDialogActions } from "../context/DialogContext";
@@ -91,8 +91,16 @@ export function Sidebar({ children }: { children?: ReactNode }) {
   const liveIssueIds = new Set(
     (liveRuns ?? []).flatMap((run) => run.issueId ? [run.issueId] : []),
   );
-  const showWorkspacesLink = experimentalSettings?.enableIsolatedWorkspaces === true;
-  const showPipelines = experimentalSettings?.enablePipelines === true;
+  // PAP-670 splits the nav reorganization across two experimental flags.
+  // Agent Chat: Chat leads Work as one row with its own agent rail (the
+  // streamlined shell only — the legacy shell keeps per-agent rows), and
+  // Workspaces leaves to make room. Combined Inbox + Task List: Inbox becomes
+  // views inside Tasks, so its row goes and its badge rides on Tasks.
+  const chatRail = agentChatEnabled && streamlinedUiEnabled;
+  // The merged Tasks page only exists in the streamlined shell, so the legacy
+  // shell keeps its Inbox row even with the flag on.
+  const combinedInboxTasks = streamlinedUiEnabled && experimentalSettings?.enableCombinedInboxTasks === true;
+  const showWorkspacesLink = !chatRail && experimentalSettings?.enableIsolatedWorkspaces === true;
   const showStatusCards = experimentalSettings?.enableStatusCards === true;
   const goalsLinkPending = experimentalSettings === undefined;
   const showGoalsLink = experimentalSettings?.enableGoalsSidebarLink === true;
@@ -168,15 +176,18 @@ export function Sidebar({ children }: { children?: ReactNode }) {
               Cmd/Ctrl+K remains the keyboard path (command palette). */}
           <SidebarNavItem to="/search" label={t("shell.sidebar.search")} icon={Search} />
           <SidebarNavItem to="/dashboard" label={t("shell.sidebar.dashboard")} icon={LayoutDashboard} liveCount={liveRunCount} />
-          <SidebarNavItem
-            to="/inbox"
-            label={t("shell.sidebar.inbox")}
-            icon={Inbox}
-            badge={inboxBadge.inbox}
-            badgeLabel={t("shell.sidebar.unread")}
-            badgeTone={inboxBadge.failedRuns > 0 ? "danger" : "default"}
-            alert={inboxBadge.failedRuns > 0}
-          />
+          {!combinedInboxTasks ? (
+            <SidebarNavItem
+              to="/inbox"
+              label={t("shell.sidebar.inbox")}
+              icon={Inbox}
+              badge={inboxBadge.inbox}
+              badgeLabel={t("shell.sidebar.unread")}
+              badgeTone={inboxBadge.failedRuns > 0 ? "danger" : "default"}
+              alert={inboxBadge.failedRuns > 0}
+            />
+          ) : null}
+          {agentChatEnabled && !chatRail ? <SidebarNavItem to="/chats" label={t("shell.sidebar.chat")} icon={MessageCircle} /> : null}
           {showDecisions ? (
             <SidebarNavItem
               to="/decisions"
@@ -195,7 +206,27 @@ export function Sidebar({ children }: { children?: ReactNode }) {
         </div>
 
         <SidebarSection label={t("shell.sidebar.work")} collapsible={{ open: workOpen, onOpenChange: setWorkOpen }}>
-          <SidebarNavItem to="/issues" label={t("shell.sidebar.tasks")} icon={CircleCheck} />
+          {/* Agent Chat: Chat leads the Work group as a single row — the
+              agents you talk to live in the Chat surface's own secondary rail
+              (ChatContextualSidebar), not in the primary nav. */}
+          {chatRail ? (
+            <SidebarNavItem to="/chats" label={t("shell.sidebar.chat")} icon={MessageCircle} />
+          ) : null}
+          {/* Combined Inbox + Task List: Inbox is a view inside Tasks, so the
+              unread/failed-run badge rides on Tasks. */}
+          {combinedInboxTasks ? (
+            <SidebarNavItem
+              to="/issues"
+              label={t("shell.sidebar.tasks")}
+              icon={CircleCheck}
+              badge={inboxBadge.inbox}
+              badgeLabel={t("shell.sidebar.unread")}
+              badgeTone={inboxBadge.failedRuns > 0 ? "danger" : "default"}
+              alert={inboxBadge.failedRuns > 0}
+            />
+          ) : (
+            <SidebarNavItem to="/issues" label={t("shell.sidebar.tasks")} icon={CircleCheck} />
+          )}
           {streamlinedUiEnabled ? (
             <>
               <SidebarNavItem to="/projects" label={t("shell.sidebar.projects")} icon={FolderOpen} />
@@ -207,9 +238,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           {showCases ? (
             <SidebarNavItem to="/cases" label={t("shell.sidebar.cases")} icon={Layers} textBadge={t("shell.sidebar.beta")} />
           ) : null}
-          {showPipelines ? (
-            <SidebarNavItem to="/pipelines" label={t("shell.sidebar.pipelines")} icon={GitBranch} />
-          ) : null}
+
           {showGoalsLink ? (
             <SidebarNavItem to="/goals" label={t("shell.sidebar.goals")} icon={Target} />
           ) : goalsLinkPending ? (
@@ -223,6 +252,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
             <SidebarNavItem to="/workspaces" label={t("shell.sidebar.workspaces")} icon={GitBranch} />
           ) : null}
           <PluginSlotOutlet
+            errorBehavior="hidden"
             slotTypes={["sidebar"]}
             context={pluginContext}
             className="flex flex-col gap-0.5"
@@ -230,6 +260,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
             missingBehavior="placeholder"
           />
           <PluginLauncherOutlet
+            errorBehavior="hidden"
             placementZones={["sidebar"]}
             context={pluginContext}
             className="flex flex-col gap-0.5"
@@ -249,8 +280,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           </SidebarSection>
         ) : null}
 
-        {children}
-        {agentChatEnabled && !children && <SidebarAgentChats />}
+        {children ?? (streamlinedUiEnabled ? <SidebarAgents streamlined /> : null)}
 
         {streamlinedUiEnabled ? (
           <SidebarRecentTasks companyId={selectedCompanyId} liveIssueIds={liveIssueIds} />
@@ -267,12 +297,14 @@ export function Sidebar({ children }: { children?: ReactNode }) {
               <SidebarNavItem to="/timeline" label={t("shell.sidebar.timeline")} icon={GanttChartSquare} />
               <SidebarNavItem to="/costs" label={t("shell.sidebar.costs")} icon={DollarSign} />
               <SidebarNavItem to="/activity" label={t("shell.sidebar.activity")} icon={History} />
+              <SidebarNavItem to="/activity/commentary" label={t("shell.sidebar.commentary")} icon={History} />
               <SidebarNavItem to="/company/settings" label={t("shell.sidebar.settings")} icon={Settings} />
             </SidebarSection>
           </>
         )}
 
         <PluginSlotOutlet
+          errorBehavior="hidden"
           slotTypes={["sidebarPanel"]}
           context={pluginContext}
           className="flex flex-col gap-3"

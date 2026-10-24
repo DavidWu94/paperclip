@@ -125,7 +125,10 @@
     },
     "cliAuth": {
       "adminRequired": "This challenge requires instance-admin access. Sign in with an instance admin account to approve it.",
-      "approveDescription": "A local Paperclip CLI process is requesting board access to this instance.",
+      "approveDescription": "A CLI client is requesting full board access to the organizations you can access on this instance. Approve only if you started this request in your own terminal.",
+      "auditOrganization": "Organization for audit context",
+      "noOrganizationAccess": "You do not have access to the requested organization.",
+      "rateLimited": "Too many CLI approval requests. Retrying shortly...",
       "approveTitle": "Approve Paperclip CLI access",
       "approvedDescription": "The Paperclip CLI can now finish authentication on the requesting machine.",
       "approvedTitle": "CLI access approved",
@@ -193,7 +196,7 @@
       "title": "Live agent runs"
     },
     "decisions": {
-      "adjustFilters": "Adjust or clear the filters to see the rest.",
+      "adjustFilters": "Adjust or clear your search and filters to see the rest.",
       "agingHint": "Idle past {{days}} days — kept off the desk. Keep any you still want surfaced.",
       "anAgent": "An agent",
       "caughtUp": "You're all caught up",
@@ -203,7 +206,7 @@
       "loadingExpired": "Loading expired decisions…",
       "noDecided": "No decided decisions.",
       "noExpired": "No expired decisions.",
-      "noFilterMatch": "No decisions match your filters.",
+      "noFilterMatch": "No decisions match your search or filters.",
       "nothingNeeded": "Nothing needs a decision from you right now.",
       "pending": "· {{count}} pending",
       "proposedOne": "{{agent}} proposed {{count}} decision",
@@ -313,6 +316,7 @@
       "noActivity": "No direct user actions recorded yet.",
       "noProviderUsage": "No provider usage attributed yet.",
       "noTasks": "No touched tasks yet.",
+      "paperclipServices": "Paperclip services",
       "open": "Open",
       "openAssigned": "Open assigned",
       "providerMix": "Provider mix",

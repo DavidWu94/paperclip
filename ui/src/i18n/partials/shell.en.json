@@ -40,6 +40,9 @@
       "timeline": "Timeline",
       "costs": "Costs",
       "activity": "Activity",
+      "commentary": "Commentary",
+      "chat": "Chat",
+      "myWork": "My work",
       "settings": "Settings"
     },
     "nav": {
@@ -106,6 +109,7 @@
       "signedIn": "Signed in",
       "localBoard": "Local workspace board",
       "openMenu": "Open account menu",
+      "invite": "Invite",
       "viewProfile": "View profile",
       "editProfile": "Edit profile",
       "documentation": "Documentation",

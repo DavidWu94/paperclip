@@ -197,11 +197,14 @@
       "approveBlocked": "You don’t have permission to approve this."
     },
     "tools": {
-      "advancedForAdmins": "Advanced setup is for administrators",
-      "advancedForAdminsBody": "This area lets administrators wire up tools that aren't in the gallery. Ask an administrator if you need a new app connected, or head back to",
+      "advancedForAdmins": "Advanced setup requires editing access",
+      "advancedForAdminsBody": "This area lets company editors wire up tools that aren't in the gallery. Ask a company editor if you need a new app connected, or head back to",
+      "agentConfigDescription": "Paste this into your agent to create an MCP config, then paste its JSON reply back into Paperclip.",
+      "agentConfigLabel": "Get a config with an agent",
+      "agentConfigTitle": "MCP configuration",
       "yourApps": "your apps",
-      "profilesForAdmins": "Access profiles are for administrators",
-      "profilesForAdminsBody": "Access profiles decide which tools your agents can use. Ask an administrator to set these up, or head back to",
+      "profilesForAdmins": "Access profiles require editing access",
+      "profilesForAdminsBody": "Access profiles decide which tools your agents can use. Ask a company editor to set these up, or head back to",
       "selectOrganizationAdvanced": "Select an organization to open advanced setup.",
       "advancedSetup": "Advanced setup",
       "advancedBadge": "Advanced",

@@ -125,7 +125,10 @@
     },
     "cliAuth": {
       "adminRequired": "這個挑戰需要執行個體管理員權限。請用管理員帳號登入後再核准。",
-      "approveDescription": "本機的 Paperclip CLI 正在要求這個執行個體的董事會存取權。",
+      "approveDescription": "有 CLI 用戶端要求取得你在這個執行個體上可存取組織的完整董事會權限。只有在你自己的終端機發起這個要求時才核准。",
+      "auditOrganization": "供稽核記錄的組織",
+      "noOrganizationAccess": "你沒有要求的組織的存取權。",
+      "rateLimited": "CLI 核准要求太頻繁。稍後會再試一次...",
       "approveTitle": "核准 Paperclip CLI 存取",
       "approvedDescription": "Paperclip CLI 現在可以在提出要求的那台機器上完成驗證。",
       "approvedTitle": "已核准 CLI 存取",
@@ -193,7 +196,7 @@
       "title": "代理即時執行"
     },
     "decisions": {
-      "adjustFilters": "調整或清除篩選條件，才能看到其餘項目。",
+      "adjustFilters": "調整或清除搜尋與篩選，才能看到其餘項目。",
       "agingHint": "閒置超過 {{days}} 天，先不放在桌上。仍想看到的可以保留。",
       "anAgent": "某個代理",
       "caughtUp": "都處理完了",
@@ -203,7 +206,7 @@
       "loadingExpired": "正在載入已過期的項目…",
       "noDecided": "沒有已決定的項目。",
       "noExpired": "沒有已過期的項目。",
-      "noFilterMatch": "沒有符合篩選條件的決策。",
+      "noFilterMatch": "沒有符合搜尋或篩選條件的決策。",
       "nothingNeeded": "目前沒有需要你決定的事項。",
       "pending": "· {{count}} 項待處理",
       "proposedOne": "{{agent}} 提出了 {{count}} 項決策",
@@ -313,6 +316,7 @@
       "noActivity": "還沒有這個使用者的直接動作紀錄。",
       "noProviderUsage": "還沒有歸屬到供應商的用量。",
       "noTasks": "還沒有碰過的任務。",
+      "paperclipServices": "Paperclip 服務",
       "open": "未完成",
       "openAssigned": "未完成的指派",
       "providerMix": "供應商組合",

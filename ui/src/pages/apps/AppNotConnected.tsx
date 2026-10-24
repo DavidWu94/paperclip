@@ -85,7 +85,7 @@ export function AppNotConnected() {
     setBreadcrumbs([
       { label: t("apps.common.connectors"), href: "/apps" },
       { label: appName, href: appApplicationTabHref(applicationId, "permissions") },
-      { label: t(`apps.tabs.${activeTab === "services" ? "services" : activeTab === "review" ? "review" : "permissions"}`) },
+      { label: activeTab === "review" ? t("apps.tabs.review") : t("apps.tabs.permissions") },
     ]);
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs, appName, applicationId, activeTab, t]);
@@ -120,9 +120,6 @@ export function AppNotConnected() {
   }
   if (activeConnection) {
     return <Navigate to={appTabHref(activeConnection.id, activeTab)} replace />;
-  }
-  if (activeTab === "services") {
-    return <Navigate to={appApplicationTabHref(applicationId, "permissions")} replace />;
   }
 
   const gallery = (galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[];

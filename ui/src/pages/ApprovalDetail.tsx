@@ -1,3 +1,4 @@
+import { AgentIdentity } from "@/components/AgentIdentity";
 import { useTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "@/lib/router";
@@ -215,8 +216,8 @@ export function ApprovalDetail() {
           {approval.requestedByAgentId && (
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground text-xs">{t("work.approvals.requestedBy")}</span>
-              <Identity
-                name={agentNameById.get(approval.requestedByAgentId) ?? approval.requestedByAgentId.slice(0, 8)}
+              <AgentIdentity
+                agent={agents?.find((agent) => agent.id === approval.requestedByAgentId) ?? { id: approval.requestedByAgentId, name: t("shell.agent.fallbackName") }}
                 size="sm"
               />
             </div>
@@ -335,8 +336,8 @@ export function ApprovalDetail() {
               <div className="flex items-center justify-between mb-1">
                 {comment.authorAgentId ? (
                   <Link to={`/agents/${comment.authorAgentId}`} className="hover:underline">
-                    <Identity
-                      name={agentNameById.get(comment.authorAgentId) ?? comment.authorAgentId.slice(0, 8)}
+                    <AgentIdentity
+                      agent={agents?.find((agent) => agent.id === comment.authorAgentId) ?? { id: comment.authorAgentId, name: "Agent" }}
                       size="sm"
                     />
                   </Link>

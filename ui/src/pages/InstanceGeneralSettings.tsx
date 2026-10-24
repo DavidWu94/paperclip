@@ -78,19 +78,16 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   }
 
   const censorUsernameInLogs = generalQuery.data?.censorUsernameInLogs === true;
-  const keyboardShortcuts = generalQuery.data?.keyboardShortcuts === true;
   const feedbackDataSharingPreference = generalQuery.data?.feedbackDataSharingPreference ?? "prompt";
   const backupRetention: BackupRetentionPolicy = generalQuery.data?.backupRetention ?? DEFAULT_BACKUP_RETENTION;
   const hiddenSettings = new Set(healthQuery.data?.hiddenSettings ?? []);
   const showDeploymentStatus = !hiddenSettings.has("instance.general.deploymentStatus");
   const showCensorUsernameInLogs = !hiddenSettings.has("instance.general.censorUsernameInLogs");
-  const showKeyboardShortcuts = !hiddenSettings.has("instance.general.keyboardShortcuts");
   const showBackupRetention = !hiddenSettings.has("instance.general.backupRetention");
   const showFeedbackDataSharing = !hiddenSettings.has("instance.general.feedbackDataSharingPreference");
   const showSignOut = !hiddenSettings.has("instance.general.signOut");
   const visibleTopics = [
     ...(showCensorUsernameInLogs ? ["log display"] : []),
-    ...(showKeyboardShortcuts ? ["keyboard shortcuts"] : []),
     ...(showBackupRetention ? ["backup retention"] : []),
     ...(showFeedbackDataSharing ? ["data sharing"] : []),
   ];
@@ -178,24 +175,6 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       </section>
       )}
 
-      {showKeyboardShortcuts && (
-      <section>
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">{t("settings.instance.shortcutsTitle")}</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
-              {t("settings.instance.shortcutsBody")}
-            </p>
-          </div>
-          <ToggleSwitch
-            checked={keyboardShortcuts}
-            onCheckedChange={() => updateGeneralMutation.mutate({ keyboardShortcuts: !keyboardShortcuts })}
-            disabled={updateGeneralMutation.isPending || signOutMutation.isPending}
-            aria-label={t("settings.instance.shortcutsAria")}
-          />
-        </div>
-      </section>
-      )}
 
       {showBackupRetention && (
       <section>

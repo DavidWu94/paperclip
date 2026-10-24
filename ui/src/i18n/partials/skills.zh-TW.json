@@ -197,11 +197,14 @@
       "approveBlocked": "您沒有核准此項目的權限。"
     },
     "tools": {
-      "advancedForAdmins": "進階設定僅供管理員使用",
-      "advancedForAdminsBody": "這個區域讓管理員接上圖庫中沒有的工具。如果需要新的應用程式連線，請洽管理員，或回到",
+      "advancedForAdmins": "進階設定需要編輯權限",
+      "advancedForAdminsBody": "這個區域讓公司編輯者接上圖庫中沒有的工具。如果需要新的應用程式連線，請洽公司編輯者，或回到",
+      "agentConfigDescription": "把這段貼給代理以建立 MCP 設定，再把它回覆的 JSON 貼回 Paperclip。",
+      "agentConfigLabel": "請代理產生設定",
+      "agentConfigTitle": "MCP 設定",
       "yourApps": "您的應用程式",
-      "profilesForAdmins": "存取設定檔僅供管理員使用",
-      "profilesForAdminsBody": "存取設定檔決定代理可以使用哪些工具。請洽管理員設定，或回到",
+      "profilesForAdmins": "存取設定檔需要編輯權限",
+      "profilesForAdminsBody": "存取設定檔決定代理可以使用哪些工具。請洽公司編輯者設定，或回到",
       "selectOrganizationAdvanced": "請選擇公司以開啟進階設定。",
       "advancedSetup": "進階設定",
       "advancedBadge": "進階",

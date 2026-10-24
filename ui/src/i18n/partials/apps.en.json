@@ -330,6 +330,7 @@
       "actionAvailable": "{{count}} action available",
       "actionsAvailable": "{{count}} actions available",
       "appName": "App name",
+      "chooseRepository": "Choose a repository to import your skills.",
       "connectedBody": "The connection is ready. Review permissions or test an action below.",
       "connectedTitle": "{{app}} connected",
       "githubCheckFailed": "GitHub access could not be checked. Try again.",
