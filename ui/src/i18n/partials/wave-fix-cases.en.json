@@ -1,0 +1,32 @@
+{
+  "waveFix": {
+    "cases": {
+      "unassigned": "Unassigned",
+      "taskUnavailable": "Task unavailable",
+      "noTaskLinked": "No task linked",
+      "identifier": "Identifier",
+      "phase": "Phase",
+      "visibleFields": "Visible fields",
+      "filter": "Filter",
+      "filterCases": "Filter cases",
+      "filterCasesActive": "Filter cases ({{active}} active)",
+      "caseFilters": "Case filters",
+      "sortCases": "Sort cases",
+      "groupCases": "Group cases",
+      "ascending": "Ascending",
+      "descending": "Descending",
+      "previousAgent": "the previous agent",
+      "receivingAgent": "the receiving agent",
+      "closeWhenComplete": "Case will close when the task is complete.",
+      "waitingForFinish": "Waiting for {{name}} to finish.",
+      "namePaused": "{{name}} is paused.",
+      "waitingForStart": "Waiting for {{name}} to start.",
+      "caseWork": "Case work",
+      "workflow": "Workflow",
+      "caseInstructions": "Case instructions",
+      "taskStatus": "Task status",
+      "primaryTaskUnavailable": "The primary task is unavailable.",
+      "nextStep": "Next: {{name}} · {{phase}}"
+    }
+  }
+}

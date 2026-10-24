@@ -1,6 +1,7 @@
 import type { CaseSummary } from "@/api/cases";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { EntityRow } from "@/components/EntityRow";
+import { useTranslation } from "@/i18n";
 import { useCaseHref } from "@/lib/router";
 import { CaseStatus } from "./CaseStatus";
 import { DEFAULT_CASE_COLUMNS, type CaseColumn } from "@/lib/case-list-view";
@@ -17,17 +18,18 @@ export function CaseListRow({
   search?: string;
   columns?: readonly CaseColumn[];
 }) {
+  const { t } = useTranslation();
   const caseHref = useCaseHref();
   const task = caseData.workIssue;
   const show = new Set(columns);
   const showWork = show.has("phase") || show.has("assignee");
   const assignee = task?.assigneeAgentId
-    ? { id: task.assigneeAgentId, name: task.assigneeAgentName ?? "Agent" }
+    ? { id: task.assigneeAgentId, name: task.assigneeAgentName ?? t("shell.agent.fallbackName") }
     : null;
   const work = task ? <>
     {show.has("phase") && caseData.phase ? <span className="text-xs text-muted-foreground">{caseData.phase}</span> : null}
-    {show.has("assignee") && (assignee ? <AgentIdentity agent={assignee} size="xs" /> : <span className="text-xs text-muted-foreground">Unassigned</span>)}
-  </> : <span className="text-xs text-muted-foreground">{caseData.workIssueId ? "Task unavailable" : "No task linked"}</span>;
+    {show.has("assignee") && (assignee ? <AgentIdentity agent={assignee} size="xs" /> : <span className="text-xs text-muted-foreground">{t("waveFix.cases.unassigned")}</span>)}
+  </> : <span className="text-xs text-muted-foreground">{caseData.workIssueId ? t("waveFix.cases.taskUnavailable") : t("waveFix.cases.noTaskLinked")}</span>;
   const subtitle = [show.has("identifier") ? caseData.identifier : null, show.has("type") ? caseData.caseType : null,
     show.has("project") ? projectName : null].filter(Boolean);
 

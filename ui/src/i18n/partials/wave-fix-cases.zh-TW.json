@@ -1,0 +1,32 @@
+{
+  "waveFix": {
+    "cases": {
+      "unassigned": "未指派",
+      "taskUnavailable": "任務無法使用",
+      "noTaskLinked": "沒有連結的任務",
+      "identifier": "識別碼",
+      "phase": "階段",
+      "visibleFields": "可見欄位",
+      "filter": "篩選",
+      "filterCases": "篩選案件",
+      "filterCasesActive": "篩選案件（{{active}} 項生效）",
+      "caseFilters": "案件篩選",
+      "sortCases": "排序案件",
+      "groupCases": "將案件分組",
+      "ascending": "遞增",
+      "descending": "遞減",
+      "previousAgent": "上一位代理",
+      "receivingAgent": "接收方代理",
+      "closeWhenComplete": "任務完成後，案件就會關閉。",
+      "waitingForFinish": "正在等待{{name}}完成。",
+      "namePaused": "{{name}}已暫停。",
+      "waitingForStart": "正在等待{{name}}開始。",
+      "caseWork": "案件工作",
+      "workflow": "工作流程",
+      "caseInstructions": "案件指示",
+      "taskStatus": "任務狀態",
+      "primaryTaskUnavailable": "主要任務無法使用。",
+      "nextStep": "下一步：{{name}} · {{phase}}"
+    }
+  }
+}
