@@ -9,7 +9,7 @@
   "skills": {
     "installed": {
       "title": "已安裝的技能",
-      "description": "這個公司可以使用的技能。"
+      "description": "這個組織可以使用的技能。"
     },
     "discover": {
       "title": "探索技能",
@@ -19,7 +19,7 @@
       "title": "建立新技能"
     },
     "fork": {
-      "title": "分叉技能"
+      "title": "建立複本"
     },
     "actions": {
       "new": "新增",
@@ -1438,7 +1438,7 @@
     },
     "costs": {
       "title": "成本",
-      "selectOrg": "請先選擇公司，再檢視成本。",
+      "selectOrg": "請先選擇組織，再檢視成本。",
       "description": "推論支出、平台費用、點數，以及即時配額區間。",
       "overview": "總覽",
       "budgets": "預算",
@@ -1524,24 +1524,24 @@
       "fitChart": "讓組織圖符合畫面"
     },
     "artifacts": {
-      "title": "產出",
-      "selectOrg": "請先選擇公司，再檢視產出。",
-      "searchPlaceholder": "搜尋產出...",
-      "searchLabel": "搜尋產出",
-      "clearSearch": "清除產出搜尋",
-      "group": "將產出分組",
-      "groupAria": "將產出分組（目前為 {{group}}）",
+      "title": "產出物",
+      "selectOrg": "請先選擇公司，再檢視產出物。",
+      "searchPlaceholder": "搜尋產出物...",
+      "searchLabel": "搜尋產出物",
+      "clearSearch": "清除產出物搜尋",
+      "group": "將產出物分組",
+      "groupAria": "將產出物分組（目前為 {{group}}）",
       "groupBy": "分組依據",
-      "filterByType": "依類型篩選產出",
-      "allStacks": "所有堆疊",
-      "loadingMore": "正在載入更多產出...",
-      "updating": "正在更新產出...",
-      "emptyStacksSearch": "沒有符合此搜尋的產出堆疊。",
-      "emptyStacks": "尚無產出堆疊。",
-      "emptySearch": "沒有符合此搜尋的產出。",
-      "emptyStackFilters": "此堆疊中沒有符合目前篩選的產出。",
-      "empty": "尚無產出。附加到議題的輸出會顯示在這裡。",
-      "emptyKind": "尚無此類型的產出。",
+      "filterByType": "依類型篩選產出物",
+      "allStacks": "所有群組",
+      "loadingMore": "正在載入更多產出物...",
+      "updating": "正在更新產出物...",
+      "emptyStacksSearch": "沒有符合此搜尋的產出物群組。",
+      "emptyStacks": "尚無產出物群組。",
+      "emptySearch": "沒有符合此搜尋的產出物。",
+      "emptyStackFilters": "此群組中沒有符合目前篩選的產出物。",
+      "empty": "尚無產出物。附加到任務的輸出會顯示在這裡。",
+      "emptyKind": "尚無此類型的產出物。",
       "kinds": {
         "all": "全部",
         "image": "圖片",
@@ -1557,25 +1557,25 @@
       }
     },
     "cases": {
-      "title": "案例",
-      "search": "搜尋案例...",
-      "searchLabel": "搜尋案例",
-      "flatList": "顯示平面案例清單",
+      "title": "案件",
+      "search": "搜尋案件...",
+      "searchLabel": "搜尋案件",
+      "flatList": "顯示平面案件清單",
       "tree": "顯示父子樹狀結構",
       "noTypes": "尚無類型",
       "noProject": "沒有專案",
       "allLabels": "所有標籤",
       "columns": "欄位",
-      "desktopRows": "桌面案例列",
+      "desktopRows": "桌面案件列",
       "chooseColumns": "選擇可見欄位",
       "resetDefaults": "重設預設值",
-      "noMatch": "沒有符合這些篩選的案例。",
-      "emptyTitle": "尚無案例",
-      "emptyHelp": "案例是持久的工作成果——部落格文章、推文串、文件頁——由任務建立並反覆修改。第一版由代理建立，而非從介面建立。",
-      "emptyHow": "若要開始建立案例，請把這段加入技能：",
+      "noMatch": "沒有符合這些篩選的案件。",
+      "emptyTitle": "尚無案件",
+      "emptyHelp": "案件是持久的工作成果——部落格文章、推文串、文件頁——由任務建立並反覆修改。第一版由代理建立，而非從介面建立。",
+      "emptyHow": "若要開始建立案件，請把這段加入技能：",
       "emptySee": "API 請參閱 paperclip 技能。",
       "emptyFlag": "此功能由 enableCases 實驗旗標控制（設定 → 實驗性）。",
-      "changeStatus": "變更案例狀態",
+      "changeStatus": "變更案件狀態",
       "filterSearch": "搜尋",
       "statusAll": "全部",
       "status": {
@@ -1595,7 +1595,7 @@
         "created": "建立時間",
         "type": "類型",
         "project": "專案",
-        "parent": "父案例"
+        "parent": "父案件"
       },
       "sort": {
         "updated": "最後更新",
@@ -1614,9 +1614,9 @@
       }
     },
     "caseDetail": {
-      "notFound": "找不到案例。",
-      "back": "← 返回案例",
-      "moreActions": "更多案例動作",
+      "notFound": "找不到案件。",
+      "back": "← 返回案件",
+      "moreActions": "更多案件動作",
       "copyMarkdown": "複製為 Markdown",
       "overview": "總覽",
       "properties": "屬性",

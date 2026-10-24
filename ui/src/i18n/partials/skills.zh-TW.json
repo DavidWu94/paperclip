@@ -358,9 +358,9 @@
   "skills": {
     "authored": {
       "title": "我的技能",
-      "description": "你可以在 Studio 開啟、編輯並測試的技能。",
+      "description": "你可以在技能工作室開啟、編輯並測試的技能。",
       "search": "搜尋我的技能",
-      "empty": "還沒有技能。建立一個技能，就能在 Studio 開始工作。",
+      "empty": "還沒有技能。建立一個技能，就能在技能工作室開始工作。",
       "openFailed": "無法開啟我的技能",
       "openFailedBody": "無法建立你的個人資料夾。"
     },
@@ -380,7 +380,7 @@
       "sort": "排序",
       "mostAgents": "最多代理",
       "mostStars": "最多星標",
-      "mostForks": "最多分叉",
+      "mostForks": "最多複本",
       "recent": "最近更新",
       "alphabetical": "字母順序",
       "source": "來源",
